@@ -1,2 +1,2 @@
 # ChocoCounter
-Cocoa Dolche Chocolathon Prompt B1 - Team Sugar Cult
+Cocoa Dolce Chocolathon Prompt B1 - Team Sugar Cult
