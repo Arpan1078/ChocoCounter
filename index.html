@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cocoa Dolce Box Log</title>
+<title>Build Your Box | Cocoa Dolce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
@@ -168,25 +168,46 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
 }
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="counter.css">
+<script src="counter-products.js"></script>
+<script src="counter-foundation.js"></script>
 </head>
 <body>
 <header>
-  <div class="mark"><b>Cocoa Dolce</b><span>box log</span></div>
-  <nav role="tablist">
-    <button role="tab" data-view="counter" aria-selected="true">Counter</button>
-    <button role="tab" data-view="boxes" aria-selected="false">Boxes</button>
-    <button role="tab" data-view="insights" aria-selected="false">Insights</button>
-    <button role="tab" data-view="menu" aria-selected="false">Case layout</button>
+  <div class="brand-area">
+    <img class="brand-logo" src="assets/logo/cocoa-dolce_flamingo_k.svg" alt="Cocoa Dolce" width="96" height="61">
+    <h1>Build Your Box</h1>
+  </div>
+  <nav aria-label="Primary navigation">
+    <button data-view="counter" aria-current="page" aria-selected="true">Counter</button>
+    <button data-view="boxes" aria-selected="false">Boxes</button>
+    <button data-view="insights" aria-selected="false">Insights</button>
   </nav>
-  <select class="loc" id="loc" aria-label="Shop location">
-    <option>Bradley Fair</option><option>New Market Square</option><option>Downtown</option><option>Fontainebleau Las Vegas</option>
-  </select>
-  <span class="sync" id="sync">Saving on this device</span>
+  <span id="sync" hidden></span>
 </header>
 
 <main>
   <!-- COUNTER -->
-  <section class="view" id="v-counter">
+  <section class="view" id="v-counter" aria-label="Counter">
+    <div class="foundation">
+      <section class="catalog" aria-labelledby="catalog-title">
+        <div class="catalog-top"><h2 id="catalog-title">Chocolates</h2><span id="catalog-result"></span></div>
+        <div class="chocolate-grid"></div>
+      </section>
+      <aside class="builder" aria-labelledby="builder-title">
+        <div class="builder-heading"><h2 id="builder-title">Your Box</h2></div>
+        <span class="box-size-label" id="size-label">BOX SIZE</span>
+        <div class="box-size-options" role="group" aria-labelledby="size-label"><button type="button" data-capacity-option="6" aria-pressed="true">6 Piece</button><button type="button" data-capacity-option="10" aria-pressed="false">10 Piece</button></div>
+        <div class="box-scene"><img src="assets/box/empty-box-preview.png" alt="Empty six-piece box preview" width="1050" height="1050"></div>
+        <div class="piece-progress"><strong id="foundation-count" aria-live="polite">0 / 6</strong><span>pieces in your box</span></div>
+        <div class="box-summary"><p>No chocolates selected.</p></div>
+        <div class="builder-controls"><button disabled>Undo</button><button disabled>Edit</button><button disabled>Empty Box</button><button class="save-box" disabled>Save Box</button></div>
+        <p class="builder-footnote">Select chocolates to fill your box.</p>
+      </aside>
+    </div>
+  </section>
+  <!-- Retained legacy transaction UI and hooks for later phases. Not navigable. -->
+  <section class="view" id="v-legacy-counter" hidden inert>
     <div class="counter">
       <div>
         <div class="grid" id="grid"></div>
@@ -343,9 +364,8 @@ let box = freshBox(null);
 let autoTimer = null, tick = null;
 let lastSaved = null; // {rec, pieces} shown until the next box starts
 let autoOn = lsGet("cd-savemode-v2", "manual") === "auto";
-const loc = $("#loc");
-loc.value = lsGet(LS.loc, "Bradley Fair");
-loc.onchange = () => lsSet(LS.loc, loc.value);
+// Existing store configuration is retained without a cashier selector.
+const loc = { value: lsGet(LS.loc, "Bradley Fair") };
 
 function freshBox(size){ return {size, pieces:[], startedAt:null, undos:0, removals:0}; }
 const byId = id => menu.find(m=>m.id===id) || {id, name:id, shell:"dark", top:"#999", deco:"dot"};
@@ -354,7 +374,10 @@ const uid = () => "bx_" + Date.now().toString(36) + Math.random().toString(36).s
 
 /* ---------- tabs ---------- */
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
-  document.querySelectorAll("nav button").forEach(x => x.setAttribute("aria-selected", x===b));
+  document.querySelectorAll("nav button").forEach(x => {
+    x.setAttribute("aria-selected", x===b);
+    if (x===b) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current");
+  });
   document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== "v-"+b.dataset.view);
   if (b.dataset.view==="boxes") renderBoxes();
   if (b.dataset.view==="insights") renderInsights();
@@ -760,11 +783,12 @@ $("#resetMenu").onclick = () => { if (confirm("Restore the default case layout? 
 
 /* ---------- keyboard: Enter saves, Backspace undoes ---------- */
 document.addEventListener("keydown", e => {
-  if ($("#v-counter").hidden || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if ($("#v-legacy-counter").hidden || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
   if (e.key==="Backspace"){ e.preventDefault(); $("#undo").click(); }
   if (e.key==="Enter" && !$("#save").disabled && !e.target.closest("button")){ e.preventDefault(); saveBox(); }
 });
 
+mountCounterFoundation({ products: COUNTER_PRODUCTS, escapeHTML: esc });
 renderCounter(); setSync();
 initDb();
 })();
