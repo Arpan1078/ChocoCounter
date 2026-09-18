@@ -45,6 +45,13 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
         clipped:[...root.querySelectorAll('button,input')].filter(visible).some(e=>e.getBoundingClientRect().right>innerWidth+1)};
     })()`);
     assert(!state.overflow && !state.clipped,JSON.stringify(state));
+    const boxImage=await evaluate(`(() => {
+      const image=document.querySelector('.box-scene img'), r=image.getBoundingClientRect(), scene=image.parentElement.getBoundingClientRect();
+      return {ratio:r.width/r.height,natural:image.naturalWidth/image.naturalHeight,
+        fits:r.left>=scene.left-1 && r.right<=scene.right+1 && r.top>=scene.top-1 && r.bottom<=scene.bottom+1,
+        centered:Math.abs((r.left+r.right)-(scene.left+scene.right))<2,fit:getComputedStyle(image).objectFit};
+    })()`);
+    assert(Math.abs(boxImage.ratio-boxImage.natural)<.001 && boxImage.fits && boxImage.centered && boxImage.fit==='contain',JSON.stringify(boxImage));
     assert.deepEqual(state.sizes,['6 Piece','10 Piece']); assert.deepEqual(state.nav,['Counter','Boxes','Insights']);
     assert.equal(state.selectors,0); assert.equal(state.cards,25); assert(state.saveDisabled);
     if(width===1920) assert.equal(state.columns,7,'Large desktop uses seven readable cards per row');
@@ -80,12 +87,12 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
   }
   assert.equal(await evaluate(`document.querySelector('[data-capacity-option="10"]').click();document.querySelector('#foundation-count').textContent`),'0 / 10');
   assert.equal(await evaluate(`document.querySelector('[data-capacity-option="6"]').click();document.querySelector('#foundation-count').textContent`),'0 / 6');
-  assert.equal(await evaluate(`document.querySelector('.chocolate-card').click();document.querySelector('#foundation-count').textContent`),'0 / 6');
+  assert.equal(await evaluate(`document.querySelector('.chocolate-card').click();document.querySelector('#foundation-count').textContent`),'1 / 6');
   assert.equal(await evaluate(`document.querySelectorAll('#v-counter input, #v-counter .recent, #v-counter .chocolate-type, #v-counter .bb').length`),0);
   const assetFiles=fs.readdirSync(path.join(__dirname,'assets/chocolates')).sort();
   const usedFiles=await evaluate(`[...document.querySelectorAll('.chocolate-card img')].map(i=>i.getAttribute('src').split('/').pop()).sort()`);
   assert.deepEqual(usedFiles,assetFiles,'Every supplied chocolate photo is used exactly once');
-  assert(await evaluate(`[...document.querySelectorAll('.chocolate-card')].every(c=>c.children.length===2 && c.querySelectorAll('img').length===1 && c.textContent.trim()===c.querySelector('.chocolate-name').textContent)`));
+  assert(await evaluate(`[...document.querySelectorAll('.chocolate-card')].every(c=>c.children.length===2 && c.querySelectorAll('img').length===1 && c.querySelector('.chocolate-name > span:first-child'))`));
   assert(await evaluate(`[...document.querySelectorAll('#v-counter img, .brand-logo')].every(i=>i.complete && i.naturalWidth>0)`),'All 27 supplied images load');
   // Full catalog contact sheet and mobile builder for visual review.
   await send('Emulation.setDeviceMetricsOverride',{width:1920,height:1400,deviceScaleFactor:1,mobile:false});
@@ -99,6 +106,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
   await delay(100);
   shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   fs.writeFileSync(path.join(profile,'mobile-box.png'),Buffer.from(shot.data,'base64'));
+  await require('./verify-selection.cjs')({ evaluate, send, delay, profile });
   await evaluate(`document.querySelector('[data-view="boxes"]').click()`);
   assert(await evaluate(`!document.querySelector('#v-boxes').hidden && document.querySelector('#boxTable').textContent.includes('Salted Caramel')`));
   assert(await evaluate(`['expCsv','expJson','bStart','bStop'].every(id=>document.getElementById(id))`));
@@ -112,7 +120,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
   await send('Page.navigate',{url:'http://127.0.0.1:8080/cocoa-dolce-box-log.html'}); await delay(600);
   assert.equal(await evaluate(`document.querySelectorAll('.chocolate-card').length`),25);
   assert.equal(errors.length,0,JSON.stringify(errors));
-  console.log('PASS: all 25 photos, official logo, supplied box render, no search/recent/type labels, size preview, inactive capture, saved records, timing, Insights, alternate entry point; no runtime/console errors.');
+  console.log('PASS: all 25 photos, official logo, supplied box render, no search/recent/type labels, selection, saved records, timing, Insights, alternate entry point; no runtime/console errors.');
   console.log(`Screenshots: ${profile}`);
   await send('Browser.close'); ws.close();
 })().catch(e=>{console.error(e);browser.kill();process.exitCode=1;});

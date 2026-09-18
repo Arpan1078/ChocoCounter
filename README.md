@@ -1,7 +1,7 @@
 ﻿# ChocoCounter
 Cocoa Dolce Chocolathon Prompt B1 - Team Sugar Cult
 
-Phase 1: responsive Cocoa Dolce cashier Counter visual foundation.
+Phase 2: catalog selection on the approved responsive Counter foundation.
 
 Run `node serve.cjs` (Node 22 or later), then open http://127.0.0.1:8080.
 No installation or build step is needed. Both `index.html` and
@@ -9,8 +9,10 @@ No installation or build step is needed. Both `index.html` and
 
 The Counter displays the 25 supplied product photos with individual colored
 backgrounds, the official SVG logo, and the supplied fixed-view PNG box render.
-`counter-products.js` contains display names, actual image paths, and card
-background colors. Names are derived from supplied filenames; colors are
+`counter-products.js` contains one entry per product: stable unique `id`, `name`,
+`image`, `backgroundColor`, and boolean `active`. Add a real image and one entry
+to extend the catalog; set `active: false` to omit unavailable products.
+Names are derived from supplied filenames; colors are
 presentation choices, not an authoritative brand palette. Existing transaction
 product IDs and historical records are not migrated or replaced.
 
@@ -25,9 +27,18 @@ compartments and is kept unchanged for both size previews. Choosing 10 Piece
 updates the count only; a matching ten-piece render can be supplied later.
 Original asset files have not been altered.
 
-Only the 6/10-piece size preview is interactive. Product cards show hover/press
-feedback but do not capture pieces. Undo, Edit, Empty Box, and Save Box remain
-disabled. There is no search field or separate recent-selection section.
+Each card tap adds one piece, updating its badge, count, and compact summary.
+Selections cannot exceed 6 or 10 pieces. Size changes preserve all pieces;
+switching to six with more than six pieces is rejected with an inline message.
+Undo, Edit, Empty Box, and Save Box remain disabled, including when full.
+There is no search field or separate recent-selection section.
+
+`counter-selection.js` owns capacity, piece IDs, and most-recently-used IDs.
+Its snapshots are copies; there is no persistence, timing, or action-history
+implementation. `counter-foundation.js` updates stable card nodes, so rapid
+input does not move targets or lose focus. It returns `getSelection()` for a
+future transaction boundary to consume recent IDs. No reordering occurs now.
+Selections reset on refresh; during this phase reload to start an empty box.
 
 Boxes, exports, comparison stopwatch, Insights, local-storage keys, and
 underlying transaction code are retained. Legacy Counter markup remains in
@@ -36,9 +47,12 @@ Counter has separate presentation state and never writes transactions.
 Store configuration retains the existing `cd-loc` setting and original Bradley
 Fair fallback; no cashier selector or Case Layout navigation is shown.
 
-With the server running, `node verify-phase1.cjs` tests six viewport widths,
-all supplied image paths and image loading, card contents, size previews,
+With the server running, `node verify-phase1.cjs` tests eight viewport sizes,
+all supplied image paths and image loading, card contents, size changes,
 retained records/timing/Insights, and runtime errors in isolated headless Chrome.
+It also runs `verify-selection.cjs` for mouse/touch/keyboard, rapid duplicates,
+capacity limits, preserved selections, stable ordering, and filled-box layouts
+at 1376×1032, 1180×820, 1024×768, and 1920×1080.
 It uses a temporary browser profile, leaving your browser data untouched.
 Set `CHROME_PATH` if Chrome is outside the default Windows location.
 Screenshot paths are printed after the run.
