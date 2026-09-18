@@ -29,7 +29,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
   // Seed existing records to test retained views without modifying real user data.
   await evaluate(`localStorage.setItem('cd-boxes-v1',JSON.stringify([{id:'qa',savedAt:new Date().toISOString(),location:'Bradley Fair',boxSize:6,pieceCount:6,captureSeconds:12,undos:0,removals:0,items:[{id:'salted-caramel',name:'Salted Caramel',qty:6}],sequence:[]}]))`);
   await send('Page.reload'); await delay(1000);
-  for(const [width,height] of [[1920,1080],[1366,900],[1024,768],[768,1024],[390,844],[320,740]]) {
+  for(const [width,height] of [[1920,1080],[1376,1032],[1366,1024],[1180,820],[1024,768],[768,1024],[390,844],[320,740]]) {
     await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
     await delay(150);
     const state=await evaluate(`(() => {
@@ -48,6 +48,32 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
     assert.deepEqual(state.sizes,['6 Piece','10 Piece']); assert.deepEqual(state.nav,['Counter','Boxes','Insights']);
     assert.equal(state.selectors,0); assert.equal(state.cards,25); assert(state.saveDisabled);
     if(width===1920) assert.equal(state.columns,7,'Large desktop uses seven readable cards per row');
+    if(width>=1024 && width<=1400 && width>height) {
+      const layout=await evaluate(`(() => {
+        const catalog=document.querySelector('.catalog'), box=document.querySelector('.builder');
+        const c=catalog.getBoundingClientRect(), b=box.getBoundingClientRect();
+        const controls=[...box.querySelectorAll('button')].map(e=>e.getBoundingClientRect());
+        return {ratio:c.width/(c.width+b.width),left:c.left,right:b.right,sideBySide:c.right<b.left,
+          bottom:b.bottom,controlsVisible:controls.every(r=>r.bottom<=innerHeight && r.top>=0),
+          minTouch:Math.min(...controls.map(r=>Math.min(r.width,r.height))),
+          nameSize:parseFloat(getComputedStyle(document.querySelector('.chocolate-name')).fontSize),
+          scrollable:catalog.scrollHeight>catalog.clientHeight};
+      })()`);
+      assert(layout.sideBySide && layout.ratio>=.70 && layout.ratio<=.75,JSON.stringify(layout));
+      assert(layout.left<=24 && width-layout.right<=24,'Use available viewport width');
+      assert(layout.bottom<=height && layout.controlsVisible,'Box and all controls fit onscreen');
+      assert(layout.minTouch>=44 && layout.nameSize>=14,'Comfortable controls and names');
+      assert(layout.scrollable,'Catalog scrolls independently');
+      assert.equal(state.columns,width>=1250?5:4);
+      const fixed=await evaluate(`(() => {
+        const c=document.querySelector('.catalog'), b=document.querySelector('.builder');
+        const before=b.getBoundingClientRect().top; c.scrollTop=c.scrollHeight;
+        const last=c.querySelector('.chocolate-card:last-child').getBoundingClientRect();
+        const result=c.scrollTop>0 && b.getBoundingClientRect().top===before && last.bottom<=c.getBoundingClientRect().bottom;
+        c.scrollTop=0;return result;
+      })()`);
+      assert(fixed,'Last product reachable without moving the box panel');
+    }
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
     fs.writeFileSync(path.join(profile,`counter-${width}.png`),Buffer.from(shot.data,'base64'));
     console.log(`PASS ${width} × ${height}: no overflow; 25 cards; only 6/10; no store selector`);
