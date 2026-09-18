@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cocoa Dolce Box Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4efeb; --surface:#fffcf9; --surface-2:#efe6dd; --ink:#2b1d17; --ink-soft:#6d5a4e;
+  --line:#e0d3c6; --gold:#9e8959; --gold-ink:#6f5f36; --cocoa:#3b2219; --ok:#4f7a4a; --warn:#a4462f;
+  --tray:#2b1a14; --tray-slot:#3d281f; --shadow:0 1px 0 rgba(43,29,23,.06),0 8px 24px -14px rgba(43,29,23,.35);
+  --serif:"Cormorant Garamond","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1a120f; --surface:#241915; --surface-2:#2f211b; --ink:#f1e6d8; --ink-soft:#b9a595;
+    --line:#3e2e26; --gold:#c4af7c; --gold-ink:#d8c592; --tray:#120c0a; --tray-slot:#2a1c16; --ok:#8fbf86; --warn:#e0856b;
+    --shadow:0 10px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1a120f; --surface:#241915; --surface-2:#2f211b; --ink:#f1e6d8; --ink-soft:#b9a595;
+  --line:#3e2e26; --gold:#c4af7c; --gold-ink:#d8c592; --tray:#120c0a; --tray-slot:#2a1c16; --ok:#8fbf86; --warn:#e0856b;
+  --shadow:0 10px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+img{max-width:100%}
+
+/* header */
+header{display:flex;align-items:center;gap:20px;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:20;flex-wrap:wrap}
+.mark{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.mark b{font-family:var(--serif);font-weight:600;font-size:28px;letter-spacing:.01em;line-height:1}
+.mark span{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--gold-ink)}
+nav{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:999px}
+nav button{border:0;background:transparent;padding:8px 18px;border-radius:999px;font-weight:500;color:var(--ink-soft)}
+nav button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.loc{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 12px;font:inherit;color:var(--ink)}
+.sync{font-size:12px;color:var(--ink-soft)}
+
+main{padding:20px 24px 120px;max-width:1500px;margin:0 auto}
+.view[hidden]{display:none}
+
+/* counter */
+.counter{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+.tile{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 8px 12px;min-height:124px;display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;transition:transform .08s ease,border-color .15s}
+.tile:active{transform:scale(.96)}
+.tile.has{border-color:var(--gold)}
+.tile .nm{font-weight:500;font-size:14px;line-height:1.2}
+.tile .ct{position:absolute;top:7px;right:7px;min-width:24px;height:24px;border-radius:12px;background:var(--gold);color:#fff;font-weight:600;font-size:13px;display:grid;place-items:center;padding:0 6px}
+.tile.flash{animation:flash .35s ease}
+@keyframes flash{0%{box-shadow:0 0 0 0 var(--gold)}100%{box-shadow:0 0 0 10px transparent}}
+.grid.locked .tile{opacity:.45}
+
+/* bonbons */
+.bb{--shell:#3b2219;--top:#c98a3d;width:46px;height:46px;border-radius:50%;position:relative;flex:none;
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.38),rgba(255,255,255,0) 38%),var(--shell);
+  box-shadow:inset 0 -4px 7px rgba(0,0,0,.35),0 2px 3px rgba(0,0,0,.25)}
+.bb::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.bb.d-half{background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.4),rgba(255,255,255,0) 38%),linear-gradient(140deg,var(--top) 0 46%,var(--shell) 47%)}
+.bb.d-dot::after{inset:34%;background:var(--top)}
+.bb.d-sparkle::after{background:radial-gradient(circle,var(--top) 1.3px,transparent 1.6px) 0 0/7px 7px;opacity:.9}
+.bb.d-stripe::after{background:repeating-linear-gradient(60deg,var(--top) 0 2px,transparent 2px 7px);opacity:.85;inset:18% 12%;border-radius:40%}
+.bb.d-gold::after{inset:30% 38% 44% 30%;background:linear-gradient(135deg,#f3dc93,#b8913b);border-radius:30% 60% 40% 50%;transform:rotate(-12deg)}
+.bb.d-cup{border-radius:26%;background:repeating-conic-gradient(from 0deg,rgba(0,0,0,.18) 0 10deg,transparent 10deg 30deg),radial-gradient(circle at 34% 28%,rgba(255,255,255,.3),transparent 40%),var(--shell)}
+.bb.d-cup::after{inset:28%;background:var(--top);border-radius:50%}
+.bb.d-dust{background:radial-gradient(circle,rgba(255,255,255,.08) 1px,transparent 1.3px) 0 0/4px 4px,var(--shell);box-shadow:inset 0 -3px 6px rgba(0,0,0,.25)}
+.bb.d-drizzle::after{background:repeating-linear-gradient(-30deg,transparent 0 5px,var(--top) 5px 7px,transparent 7px 12px);inset:10% 14% 40%;border-radius:50% 50% 30% 30%}
+.bb.sm{width:30px;height:30px}
+
+/* box panel */
+.panel{position:sticky;top:84px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.panel h2{font-family:var(--serif);font-weight:600;font-size:26px;margin:0 0 2px;line-height:1.1}
+.muted{color:var(--ink-soft)}
+.small{font-size:13px}
+.sizes{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 14px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;font-weight:500;min-width:48px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.tray{background:var(--tray);border-radius:12px;padding:12px;display:grid;gap:8px;box-shadow:inset 0 2px 10px rgba(0,0,0,.5)}
+.slot{aspect-ratio:1;border-radius:50%;background:var(--tray-slot);display:grid;place-items:center;border:0;padding:0;box-shadow:inset 0 3px 6px rgba(0,0,0,.55)}
+.slot .bb{width:82%;height:82%;animation:drop .22s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes drop{from{transform:translateY(-10px) scale(.7);opacity:0}to{transform:none;opacity:1}}
+.slot:disabled{cursor:default}
+.progress{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 4px}
+.progress .n{font-family:var(--serif);font-size:34px;font-weight:600;line-height:1}
+.list{margin:6px 0 12px;padding:0;list-style:none;font-size:14px;max-height:180px;overflow:auto}
+.list li{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--line)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;font-weight:500}
+.btn.primary{background:var(--cocoa);border-color:var(--cocoa);color:#f6ead8;grid-column:1/-1;padding:15px;font-size:16px}
+:root[data-theme="dark"] .btn.primary{background:var(--gold);border-color:var(--gold);color:#1a120f}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{background:var(--gold);border-color:var(--gold);color:#1a120f}}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#fff}
+.banner{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--surface-2);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px}
+.banner[hidden]{display:none}
+.savemode{border:1px solid var(--line);border-radius:10px;margin:12px 0 0;padding:8px 12px 10px;display:grid;gap:6px}
+.savemode legend{padding:0 4px}
+.banner.saved{background:color-mix(in srgb,var(--ok) 16%,var(--surface))}
+.tray.done{outline:2px solid var(--ok);outline-offset:3px}
+.banner .bar{height:3px;background:var(--gold);border-radius:2px;margin-top:6px;transform-origin:left;animation:count 2s linear forwards}
+@keyframes count{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:12px 16px;border-radius:12px;display:flex;gap:14px;align-items:center;z-index:50;box-shadow:0 12px 30px -10px rgba(0,0,0,.5);max-width:calc(100% - 32px)}
+.toast[hidden]{display:none}
+.toast button{background:transparent;border:1px solid currentColor;border-radius:8px;padding:5px 10px;color:inherit}
+
+/* generic sections */
+.section{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:18px}
+.section h2{font-family:var(--serif);font-weight:600;font-size:28px;margin:0 0 4px;line-height:1.1}
+.section h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}
+.stat{background:var(--surface-2);border-radius:12px;padding:12px 14px}
+.stat .v{font-family:var(--serif);font-size:32px;font-weight:600;line-height:1.05}
+.stat .k{font-size:13px;color:var(--ink-soft)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--ink-soft);font-size:13px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.pieces-cell{max-width:460px}
+.x{border:0;background:transparent;color:var(--ink-soft);padding:2px 6px;border-radius:6px}
+.x:hover{color:var(--warn)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.bars{display:grid;gap:7px}
+.barrow{display:grid;grid-template-columns:30px 150px 1fr 48px;align-items:center;gap:10px;font-size:14px}
+.track{height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.fill{height:100%;background:var(--gold);border-radius:6px}
+.pair{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.pair .duo{display:flex}
+.pair .duo .bb+.bb{margin-left:-8px}
+.lift{font-size:12px;border-radius:999px;padding:3px 9px;background:var(--surface-2);white-space:nowrap}
+.lift.hi{background:var(--gold);color:#fff}
+.watch{font-family:var(--serif);font-size:56px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.empty{padding:28px;text-align:center;color:var(--ink-soft)}
+.menu-row{display:grid;grid-template-columns:40px 1fr 110px 110px 120px auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.menu-row input[type=text],.menu-row select,.field{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit;width:100%}
+.menu-row input[type=color]{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
+.menu-row.off{opacity:.5}
+label.toggle{display:inline-flex;gap:8px;align-items:center;font-size:14px}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);max-width:720px;width:calc(100% - 32px)}
+dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px}
+
+@media (max-width:980px){
+  .counter{grid-template-columns:1fr}
+  .panel{position:static}
+  .two{grid-template-columns:1fr}
+  .menu-row{grid-template-columns:36px 1fr 1fr;}
+}
+@media (max-width:560px){
+  header{padding:12px 14px} main{padding:14px}
+  .grid{grid-template-columns:repeat(3,1fr)}
+  .tile{min-height:108px;padding:12px 4px}
+  .barrow{grid-template-columns:26px 100px 1fr 40px}
+}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="mark"><b>Cocoa Dolce</b><span>box log</span></div>
+  <nav role="tablist">
+    <button role="tab" data-view="counter" aria-selected="true">Counter</button>
+    <button role="tab" data-view="boxes" aria-selected="false">Boxes</button>
+    <button role="tab" data-view="insights" aria-selected="false">Insights</button>
+    <button role="tab" data-view="menu" aria-selected="false">Case layout</button>
+  </nav>
+  <select class="loc" id="loc" aria-label="Shop location">
+    <option>Bradley Fair</option><option>New Market Square</option><option>Downtown</option><option>Fontainebleau Las Vegas</option>
+  </select>
+  <span class="sync" id="sync">Saving on this device</span>
+</header>
+
+<main>
+  <!-- COUNTER -->
+  <section class="view" id="v-counter">
+    <div class="counter">
+      <div>
+        <div class="grid" id="grid"></div>
+        <p class="small muted" style="margin-top:14px">Tap each piece as you reach for it. The grid follows the order of the display case, so you can edit it in Case layout.</p>
+      </div>
+      <aside class="panel" id="panel">
+        <h2>This box</h2>
+        <div class="small muted" id="hint">Choose a box size, then tap pieces.</div>
+        <div class="sizes" id="sizes"></div>
+        <div class="tray" id="tray"></div>
+        <div class="progress"><span class="n" id="count">0</span><span class="muted" id="timer">0.0 s</span></div>
+        <ul class="list" id="summary"></ul>
+        <div class="actions">
+          <button class="btn" id="undo" disabled>Undo last</button>
+          <button class="btn" id="clear" disabled>Start over</button>
+          <button class="btn primary" id="save" disabled>Save box</button>
+        </div>
+        <div class="banner saved" id="savedNote" hidden>
+          <div style="flex:1"><b id="savedTitle">Box saved</b><div class="small muted">Tap a piece to start the next box.</div></div>
+          <button class="btn" id="undoSave" style="padding:6px 12px">Undo save</button>
+        </div>
+        <fieldset class="savemode">
+          <legend class="small muted">When the box is full</legend>
+          <label class="toggle small"><input type="radio" name="savemode" value="manual"> Wait until I tap Save box</label>
+          <label class="toggle small"><input type="radio" name="savemode" value="auto"> Save automatically after 2 seconds</label>
+        </fieldset>
+        <div class="banner" id="autosave" hidden>
+          <div style="flex:1">Box full. Saving…<div class="bar" id="autobar"></div></div>
+          <button class="btn" id="cancelAuto" style="padding:6px 12px">Wait</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- BOXES -->
+  <section class="view" id="v-boxes" hidden>
+    <div class="section">
+      <div class="row spread">
+        <div><h2>Saved boxes</h2><div class="muted small" id="boxCountLbl"></div></div>
+        <div class="row">
+          <button class="btn" id="expCsv">Export CSV</button>
+          <button class="btn" id="expJson">Export JSON</button>
+        </div>
+      </div>
+      <div class="stats" id="timeStats"></div>
+      <div class="scroll"><table id="boxTable"></table></div>
+    </div>
+
+    <div class="section">
+      <h2>Measure the time it adds</h2>
+      <p class="muted" style="max-width:68ch">Time a few boxes the old way with this stopwatch: start when the first piece is picked up, stop when the lid closes. The app times logged boxes the same way, from the first tap to save. The difference is the time the log adds.</p>
+      <div class="two" style="margin-top:12px">
+        <div>
+          <div class="row" style="margin-bottom:10px">
+            <span class="small muted">Box size</span>
+            <select class="field" id="bSize" style="width:auto"></select>
+          </div>
+          <div class="watch" id="watch">0.0 s</div>
+          <div class="row" style="margin-top:12px">
+            <button class="btn gold" id="bStart">Start</button>
+            <button class="btn" id="bStop" disabled>Stop and record</button>
+          </div>
+        </div>
+        <div id="compare"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section class="view" id="v-insights" hidden>
+    <div class="section">
+      <div class="row spread">
+        <div><h2>What customers choose</h2><div class="muted small" id="insLbl"></div></div>
+        <div class="row">
+          <select class="field" id="fLoc" style="width:auto"><option value="">All shops</option><option>Bradley Fair</option><option>New Market Square</option><option>Downtown</option><option>Fontainebleau Las Vegas</option></select>
+          <select class="field" id="fRange" style="width:auto"><option value="0">All time</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option></select>
+          <label class="toggle"><input type="checkbox" id="fDemo"> Add 240 sample boxes</label>
+        </div>
+      </div>
+      <div class="stats" id="insStats"></div>
+      <div class="two">
+        <div><h3>Most-picked pieces</h3><div class="bars" id="topBars"></div></div>
+        <div><h3>Pieces that go together</h3><p class="small muted" style="margin:0 0 6px">Pairs that share a box most often. The tag shows how much more often than chance, so popular pieces don't crowd out real favorites.</p><div id="pairs"></div></div>
+      </div>
+      <div class="two">
+        <div><h3>Box sizes sold</h3><div class="bars" id="sizeBars"></div></div>
+        <div><h3>Capture time by box size</h3><div class="bars" id="timeBars"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENU -->
+  <section class="view" id="v-menu" hidden>
+    <div class="section">
+      <div class="row spread">
+        <div><h2>Case layout</h2><p class="muted small" style="margin:2px 0 0;max-width:70ch">Set the order to match the display case, left to right and top to bottom. Hide pieces that are sold out or out of season; saved boxes keep their names.</p></div>
+        <div class="row"><button class="btn gold" id="addPiece">Add a piece</button><button class="btn" id="resetMenu">Restore defaults</button></div>
+      </div>
+      <div id="menuRows" style="margin-top:12px"></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" hidden><span id="toastMsg"></span><button id="toastBtn">Undo</button></div>
+
+<dialog id="fallback">
+  <h3 style="font-family:var(--serif);font-size:22px;margin:0 0 8px" id="fbTitle">Copy export</h3>
+  <p class="small muted">Downloads aren't available in this view. Copy the text below into a file.</p>
+  <textarea id="fbText" readonly></textarea>
+  <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" id="fbCopy">Copy</button><button class="btn gold" id="fbClose">Close</button></div>
+</dialog>
+
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- default case layout (from cocoadolce.com flavor descriptions) ---------- */
+const SHELL = {dark:"#3b2219", milk:"#6b4128", white:"#eee2c9", gold:"#c99a5b"};
+const DEFAULT_MENU = [
+  ["salted-caramel","Salted Caramel","milk","#d39a4a","dot"],
+  ["champagne","Champagne","dark","#f1e6c8","sparkle"],
+  ["raspberry","Raspberry","dark","#c2334d","half"],
+  ["lemon","Lemon","white","#f0cf3a","half"],
+  ["cheesecake","Cheesecake","white","#b8864f","dust"],
+  ["pistachio","Pistachio","dark","#8fae4f","stripe"],
+  ["creme-brulee","Crème Brûlée","dark","#d9a45a","cup"],
+  ["cookies-cream","Cookies & Cream","dark","#f4efe6","drizzle"],
+  ["espresso-caramel","Espresso Caramel","dark","#8a5a3a","stripe"],
+  ["dulce-de-leche","Dulce de Leche","milk","#e1b777","drizzle"],
+  ["pecan-caramel","Pecan Caramel","dark","#a8703f","gold"],
+  ["banana-rum","Banana Rum","dark","#f2d36b","dot"],
+  ["earl-grey-honey","Earl Grey Honey","white","#7d8fb3","sparkle"],
+  ["pb-caramel","Peanut Butter Caramel","dark","#c78c4c","half"],
+  ["amaretto","Amaretto","milk","#b0613a","gold"],
+  ["pineapple-moscato","Pineapple Moscato","white","#f2b53d","stripe"],
+  ["old-fashioned","Old Fashioned","milk","#d0622c","half"],
+  ["classic-truffle","Classic Dark Truffle","dark","#5a3526","dust"],
+  ["grey-salt-caramel","Grey Salt Caramel","gold","#8f8a86","dot"]
+].map(([id,name,shell,top,deco])=>({id,name,shell,top,deco,active:true}));
+
+const SIZES = [6,10,16,30,50];
+const LS = {boxes:"cd-boxes-v1", menu:"cd-menu-v1", loc:"cd-loc", base:"cd-baseline-v1", pend:"cd-pending-v1"};
+const lsGet = (k,d) => { try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } };
+const lsSet = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+
+/* ---------- state ---------- */
+let menu = lsGet(LS.menu, null) || DEFAULT_MENU.map(m=>({...m}));
+let boxes = lsGet(LS.boxes, []);
+let baseline = lsGet(LS.base, []);
+let db = null, dbLive = false;
+let box = freshBox(null);
+let autoTimer = null, tick = null;
+let lastSaved = null; // {rec, pieces} shown until the next box starts
+let autoOn = lsGet("cd-savemode-v2", "manual") === "auto";
+const loc = $("#loc");
+loc.value = lsGet(LS.loc, "Bradley Fair");
+loc.onchange = () => lsSet(LS.loc, loc.value);
+
+function freshBox(size){ return {size, pieces:[], startedAt:null, undos:0, removals:0}; }
+const byId = id => menu.find(m=>m.id===id) || {id, name:id, shell:"dark", top:"#999", deco:"dot"};
+function bb(m, cls=""){ return `<span class="bb d-${esc(m.deco)} ${cls}" style="--shell:${SHELL[m.shell]||m.shell};--top:${esc(m.top)}" aria-hidden="true"></span>`; }
+const uid = () => "bx_" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+/* ---------- tabs ---------- */
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.setAttribute("aria-selected", x===b));
+  document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== "v-"+b.dataset.view);
+  if (b.dataset.view==="boxes") renderBoxes();
+  if (b.dataset.view==="insights") renderInsights();
+  if (b.dataset.view==="menu") renderMenu();
+});
+
+/* ---------- counter ---------- */
+function renderSizes(){
+  $("#sizes").innerHTML = SIZES.map(s=>`<button class="chip" data-s="${s}" aria-pressed="${box.size===s}">${s}</button>`).join("")
+    + `<button class="chip" data-s="open" aria-pressed="${box.size==='open'}">Other</button>`;
+  $("#sizes").querySelectorAll(".chip").forEach(c => c.onclick = () => {
+    const s = c.dataset.s==="open" ? "open" : +c.dataset.s;
+    if (typeof s==="number" && box.pieces.length > s){ nudge(`This box already has ${box.pieces.length} pieces.`); return; }
+    if (!box.pieces.length) lastSaved = null;
+    box.size = s; cancelAuto(); renderCounter(); checkFull();
+  });
+}
+function renderGrid(){
+  const counts = {};
+  box.pieces.forEach(p => counts[p.id]=(counts[p.id]||0)+1);
+  const g = $("#grid");
+  g.classList.toggle("locked", !box.size);
+  g.innerHTML = menu.filter(m=>m.active).map(m=>`
+    <button class="tile ${counts[m.id]?'has':''}" data-id="${esc(m.id)}" aria-label="Add ${esc(m.name)}">
+      ${bb(m)}<span class="nm">${esc(m.name)}</span>${counts[m.id]?`<span class="ct">${counts[m.id]}</span>`:""}
+    </button>`).join("");
+  g.querySelectorAll(".tile").forEach(t => t.onclick = () => addPiece(t.dataset.id, t));
+}
+function renderTray(){
+  const showing = (!box.pieces.length && lastSaved) ? lastSaved : null;
+  const pieces = showing ? showing.pieces : box.pieces;
+  const size = showing ? (showing.rec.boxSize || "open") : box.size;
+  const n = pieces.length;
+  const slots = size==="open" ? Math.max(12, Math.ceil((n+1)/6)*6) : (size || 6);
+  const cols = slots<=6?3 : slots<=10?5 : slots<=16?4 : slots<=30?6 : 10;
+  const tray = $("#tray");
+  tray.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+  let h = "";
+  for (let i=0;i<slots;i++){
+    const p = pieces[i];
+    h += (p && showing) ? `<button class="slot" disabled aria-label="${esc(byId(p.id).name)}">${bb(byId(p.id),"still")}</button>`
+       : p ? `<button class="slot" data-i="${i}" aria-label="Remove ${esc(byId(p.id).name)}">${bb(byId(p.id), i===n-1?"":"still")}</button>`
+           : `<button class="slot" disabled aria-label="Empty slot"></button>`;
+  }
+  tray.innerHTML = h;
+  tray.classList.toggle("done", !!showing);
+  tray.querySelectorAll(".slot[data-i]").forEach(s => s.onclick = () => {
+    box.pieces.splice(+s.dataset.i,1); box.removals++; cancelAuto(); renderCounter();
+  });
+  tray.querySelectorAll(".bb.still").forEach(b => b.style.animation="none");
+}
+function renderCounter(){
+  renderSizes(); renderGrid(); renderTray();
+  const n = box.pieces.length;
+  const showing = (!n && lastSaved) ? lastSaved : null;
+  $("#savedNote").hidden = !showing;
+  if (showing) $("#savedTitle").textContent = `Box saved: ${showing.rec.pieceCount} pieces in ${showing.rec.captureSeconds.toFixed(1)} s`;
+  $("#count").textContent = showing ? `${showing.rec.pieceCount} of ${showing.rec.boxSize||showing.rec.pieceCount}` : box.size==="open" ? `${n} pieces` : box.size ? `${n} of ${box.size}` : "0";
+  $("#hint").textContent = showing ? "Saved. The next tap starts a new box." : !box.size ? "Choose a box size, then tap pieces." :
+    n===0 ? "Tap each piece as it goes in." : "Tap a piece in the tray to remove it.";
+  const counts = {};
+  (showing ? showing.pieces : box.pieces).forEach(p => counts[p.id]=(counts[p.id]||0)+1);
+  $("#summary").innerHTML = Object.entries(counts).map(([id,q])=>`<li><span>${esc(byId(id).name)}</span><span>× ${q}</span></li>`).join("");
+  $("#undo").disabled = n===0; $("#clear").disabled = n===0; $("#save").disabled = n===0;
+  if (!box.startedAt) $("#timer").textContent = showing ? showing.rec.captureSeconds.toFixed(1)+" s" : "0.0 s";
+}
+function addPiece(id, tile){
+  if (lastSaved && !box.pieces.length){ lastSaved = null; }
+  if (!box.size){ nudge("Choose a box size first."); $("#sizes").classList.add("shake"); setTimeout(()=>$("#sizes").classList.remove("shake"),320); return; }
+  if (typeof box.size==="number" && box.pieces.length >= box.size){ nudge("Box is full. Remove a piece or choose a bigger size."); return; }
+  if (!box.startedAt){ box.startedAt = performance.now(); box.startedWall = Date.now(); startTick(); }
+  box.pieces.push({id, t: Math.round(performance.now()-box.startedAt)});
+  renderCounter();
+  const again = document.querySelector(`.tile[data-id="${CSS.escape(id)}"]`);
+  if (again){ again.classList.remove("flash"); void again.offsetWidth; again.classList.add("flash"); }
+  if (navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
+  checkFull();
+}
+function startTick(){
+  clearInterval(tick);
+  tick = setInterval(()=>{ if(box.startedAt) $("#timer").textContent = ((performance.now()-box.startedAt)/1000).toFixed(1)+" s"; }, 100);
+}
+function checkFull(){
+  if (typeof box.size==="number" && box.pieces.length===box.size){
+    if (!autoOn){ $("#hint").textContent = "Box is full. Tap Save box when it's ready."; return; }
+    $("#autosave").hidden = false;
+    const bar = $("#autobar"); bar.style.animation="none"; void bar.offsetWidth; bar.style.animation="";
+    clearTimeout(autoTimer); autoTimer = setTimeout(saveBox, 2000);
+  }
+}
+function cancelAuto(){ clearTimeout(autoTimer); autoTimer=null; $("#autosave").hidden = true; }
+$("#cancelAuto").onclick = cancelAuto;
+document.querySelectorAll('input[name="savemode"]').forEach(r => {
+  r.checked = (r.value==="auto") === autoOn;
+  r.onchange = () => { autoOn = r.value==="auto"; lsSet("cd-savemode-v2", r.value); if(!autoOn) cancelAuto(); else checkFull(); };
+});
+$("#undoSave").onclick = async () => {
+  if (!lastSaved) return;
+  const {rec, pieces} = lastSaved;
+  lastSaved = null;
+  await deleteBox(rec.id);
+  box = freshBox(rec.boxSize || "open");
+  box.pieces = pieces.map(id=>({...id})); box.startedAt = performance.now() - rec.captureSeconds*1000;
+  renderCounter(); showToast("Save undone. The box is back for editing.", null);
+};
+$("#undo").onclick = () => { if(box.pieces.length){ box.pieces.pop(); box.undos++; cancelAuto(); renderCounter(); } };
+$("#clear").onclick = () => { cancelAuto(); clearInterval(tick); box = freshBox(box.size); renderCounter(); };
+$("#save").onclick = saveBox;
+
+function nudge(msg){ showToast(msg, null); }
+
+async function saveBox(){
+  cancelAuto();
+  if (!box.pieces.length) return;
+  clearInterval(tick);
+  const secs = box.startedAt ? (performance.now()-box.startedAt)/1000 : 0;
+  const counts = {};
+  box.pieces.forEach(p => counts[p.id]=(counts[p.id]||0)+1);
+  const rec = {
+    id: uid(),
+    savedAt: new Date().toISOString(),
+    location: loc.value,
+    boxSize: box.size==="open" ? null : box.size,
+    pieceCount: box.pieces.length,
+    items: Object.entries(counts).map(([id,qty])=>({id, name: byId(id).name, qty})),
+    sequence: box.pieces.map(p=>p.id),
+    tapOffsetsMs: box.pieces.map(p=>p.t),
+    captureSeconds: Math.round(secs*10)/10,
+    undos: box.undos,
+    removals: box.removals
+  };
+  const savedPieces = box.pieces.slice();
+  lastSaved = null;
+  box = freshBox(box.size);
+  renderCounter();
+  await persistBox(rec);
+  showToast(`Box saved: ${rec.pieceCount} pieces in ${rec.captureSeconds.toFixed(1)} s`, async () => {
+    await deleteBox(rec.id);
+    box = freshBox(rec.boxSize || "open");
+    box.pieces = savedPieces.map(x=>({...x}));
+    box.startedAt = performance.now() - rec.captureSeconds*1000;
+    renderCounter(); showToast("Save undone. The box is back for editing.", null);
+  });
+}
+
+/* ---------- toast ---------- */
+let toastT = null;
+function showToast(msg, undoFn){
+  $("#toastMsg").textContent = msg;
+  const b = $("#toastBtn");
+  b.hidden = !undoFn; b.onclick = () => { $("#toast").hidden = true; undoFn && undoFn(); };
+  $("#toast").hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(()=>$("#toast").hidden = true, undoFn ? 5000 : 2200);
+}
+
+/* ---------- persistence ---------- */
+function setSync(){ $("#sync").textContent = dbLive ? "Synced across counter devices" : "Saving on this device"; }
+async function persistBox(rec){
+  if (dbLive){
+    try { await db.collection("boxes").doc(rec.id).set(rec); return; }
+    catch(e){ goLocal(); }
+  }
+  boxes.push(rec); lsSet(LS.boxes, boxes); refreshOpenView();
+}
+async function deleteBox(id){
+  if (dbLive){ try{ await db.doc("boxes/"+id).delete(); return; }catch(e){ goLocal(); } }
+  boxes = boxes.filter(b=>b.id!==id); lsSet(LS.boxes, boxes); refreshOpenView();
+}
+async function persistMenu(){
+  lsSet(LS.menu, menu);
+  if (dbLive){ try{ await db.doc("config/menu").set({items: menu}); }catch(e){} }
+}
+function goLocal(){ dbLive = false; boxes = lsGet(LS.boxes, []); setSync(); refreshOpenView(); }
+function refreshOpenView(){
+  if (!$("#v-boxes").hidden) renderBoxes();
+  if (!$("#v-insights").hidden) renderInsights();
+}
+async function initDb(){
+  try{
+    if (!window.claude || !window.claude.use) return;
+    db = await window.claude.use("db");
+    if (!db) return;
+    db.collection("boxes").onSnapshot(async snap => {
+      const remote = snap.docs.map(d=>d.data()).filter(Boolean);
+      if (!dbLive){
+        dbLive = true; setSync();
+        const local = lsGet(LS.boxes, []);
+        const known = new Set(remote.map(r=>r.id));
+        for (const r of local.filter(r=>!known.has(r.id))){
+          try{ await db.collection("boxes").doc(r.id).set(r); }catch(e){ break; }
+        }
+      }
+      boxes = remote.sort((a,b)=>a.savedAt<b.savedAt?-1:1);
+      lsSet(LS.boxes, boxes);
+      refreshOpenView();
+    }, () => goLocal());
+    db.doc("config/menu").onSnapshot(s => {
+      const d = s.exists && s.data();
+      if (d && Array.isArray(d.items) && d.items.length){ menu = d.items; lsSet(LS.menu, menu); renderGrid(); if(!$("#v-menu").hidden) renderMenu(); }
+    }, () => {});
+  }catch(e){}
+}
+
+/* ---------- exports ---------- */
+function toCSV(list){
+  const ids = [];
+  menu.forEach(m=>ids.push(m.id));
+  list.forEach(b=>b.items.forEach(i=>{ if(!ids.includes(i.id)) ids.push(i.id); }));
+  const q = v => { const s = v==null ? "" : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; };
+  const head = ["box_id","saved_at","location","box_size","piece_count","capture_seconds","undos","removals","pieces", ...ids.map(id=>"qty_"+id)];
+  const rows = list.map(b => {
+    const m = Object.fromEntries(b.items.map(i=>[i.id,i.qty]));
+    return [b.id,b.savedAt,b.location,b.boxSize??"",b.pieceCount,b.captureSeconds,b.undos,b.removals,
+      b.items.map(i=>`${i.name} x${i.qty}`).join("; "), ...ids.map(id=>m[id]||0)].map(q).join(",");
+  });
+  return [head.join(","), ...rows].join("\n");
+}
+async function exportFile(kind){
+  if (!boxes.length){ nudge("No boxes saved yet."); return; }
+  const stamp = new Date().toISOString().slice(0,10);
+  const filename = `cocoa-dolce-boxes-${stamp}.${kind}`;
+  const data = kind==="csv" ? toCSV(boxes) : JSON.stringify({exportedAt:new Date().toISOString(), boxCount:boxes.length, boxes}, null, 2);
+  let dl = null;
+  try{ dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null; }catch(e){}
+  if (dl){
+    try{ await dl.save({filename, data}); return; }
+    catch(e){ if (e && e.code==="declined") return; if (e && e.code==="rate_limited"){ nudge("A save prompt is already open."); return; } }
+  }
+  $("#fbTitle").textContent = filename; $("#fbText").value = data; $("#fallback").showModal();
+}
+$("#expCsv").onclick = () => exportFile("csv");
+$("#expJson").onclick = () => exportFile("json");
+$("#fbClose").onclick = () => $("#fallback").close();
+$("#fbCopy").onclick = async () => { try{ await navigator.clipboard.writeText($("#fbText").value); $("#fbCopy").textContent="Copied"; }catch(e){ $("#fbText").select(); } };
+
+/* ---------- boxes view ---------- */
+const median = a => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+const fmt = v => v==null ? "–" : v.toFixed(1)+" s";
+function renderBoxes(){
+  $("#boxCountLbl").textContent = `${boxes.length} box${boxes.length===1?"":"es"} logged`;
+  const times = boxes.map(b=>b.captureSeconds);
+  const perPiece = boxes.map(b=>b.captureSeconds/Math.max(1,b.pieceCount));
+  const corrections = boxes.reduce((s,b)=>s+b.undos+b.removals,0);
+  $("#timeStats").innerHTML = `
+    <div class="stat"><div class="v">${fmt(median(times))}</div><div class="k">Median time, first tap to save</div></div>
+    <div class="stat"><div class="v">${fmt(median(perPiece))}</div><div class="k">Median per piece</div></div>
+    <div class="stat"><div class="v">${boxes.length? (corrections/boxes.length).toFixed(2):"–"}</div><div class="k">Corrections per box</div></div>
+    <div class="stat"><div class="v">${boxes.reduce((s,b)=>s+b.pieceCount,0)}</div><div class="k">Pieces recorded</div></div>`;
+  if (!boxes.length){ $("#boxTable").innerHTML = `<tr><td class="empty">Saved boxes appear here. Log one from the Counter tab.</td></tr>`; }
+  else {
+    $("#boxTable").innerHTML = `<thead><tr><th>Saved</th><th>Shop</th><th class="num">Size</th><th>Pieces</th><th class="num">Time</th><th class="num">Fixes</th><th></th></tr></thead><tbody>` +
+      [...boxes].reverse().map(b=>`<tr>
+        <td>${new Date(b.savedAt).toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</td>
+        <td>${esc(b.location)}</td>
+        <td class="num">${b.boxSize ?? b.pieceCount}</td>
+        <td class="pieces-cell">${b.items.map(i=>`${esc(i.name)} ×${i.qty}`).join(", ")}</td>
+        <td class="num">${b.captureSeconds.toFixed(1)} s</td>
+        <td class="num">${b.undos+b.removals}</td>
+        <td><button class="x" data-del="${esc(b.id)}" aria-label="Delete box">Delete</button></td></tr>`).join("") + "</tbody>";
+    $("#boxTable").querySelectorAll("[data-del]").forEach(x => x.onclick = () => { if (confirm("Delete this box record?")) deleteBox(x.dataset.del); });
+  }
+  renderCompare();
+}
+
+/* baseline stopwatch */
+$("#bSize").innerHTML = SIZES.map(s=>`<option>${s}</option>`).join("");
+let bStart = null, bTick = null;
+$("#bStart").onclick = () => {
+  bStart = performance.now(); $("#bStart").disabled = true; $("#bStop").disabled = false;
+  bTick = setInterval(()=>$("#watch").textContent = ((performance.now()-bStart)/1000).toFixed(1)+" s", 100);
+};
+$("#bStop").onclick = () => {
+  clearInterval(bTick);
+  const s = Math.round((performance.now()-bStart)/100)/10;
+  baseline.push({size:+$("#bSize").value, seconds:s, at:new Date().toISOString()});
+  lsSet(LS.base, baseline);
+  bStart=null; $("#bStart").disabled=false; $("#bStop").disabled=true; $("#watch").textContent = s.toFixed(1)+" s";
+  renderCompare();
+};
+function renderCompare(){
+  const sizes = [...new Set([...baseline.map(b=>b.size), ...boxes.filter(b=>b.boxSize).map(b=>b.boxSize)])].sort((a,b)=>a-b);
+  if (!sizes.length){ $("#compare").innerHTML = `<p class="muted">Record a few timed boxes both ways to see the difference.</p>`; return; }
+  $("#compare").innerHTML = `<div class="scroll"><table><thead><tr><th>Box</th><th class="num">Without log</th><th class="num">With log</th><th class="num">Added</th></tr></thead><tbody>${
+    sizes.map(s=>{
+      const bl = baseline.filter(b=>b.size===s).map(b=>b.seconds);
+      const ap = boxes.filter(b=>b.boxSize===s).map(b=>b.captureSeconds);
+      const mb = median(bl), ma = median(ap);
+      const add = mb!=null && ma!=null ? ma-mb : null;
+      return `<tr><td>${s} pieces</td><td class="num">${fmt(mb)} <span class="muted small">(${bl.length})</span></td><td class="num">${fmt(ma)} <span class="muted small">(${ap.length})</span></td><td class="num"><b>${add==null?"–":(add>=0?"+":"")+add.toFixed(1)+" s"}</b></td></tr>`;
+    }).join("")}</tbody></table></div>
+    <p class="small muted">Medians, with the number of timed boxes in brackets. Aim for at least 10 each way.</p>
+    ${baseline.length?`<button class="x" id="clrBase">Clear stopwatch times</button>`:""}`;
+  const c = $("#clrBase"); if (c) c.onclick = () => { if(confirm("Clear all stopwatch times?")){ baseline=[]; lsSet(LS.base, baseline); renderCompare(); } };
+}
+
+/* ---------- insights ---------- */
+let demoCache = null;
+function demoBoxes(){
+  if (demoCache) return demoCache;
+  let seed = 7; const rnd = () => (seed = (seed*16807)%2147483647)/2147483647;
+  const w = {"salted-caramel":10,"champagne":8,"raspberry":7,"lemon":5,"cheesecake":6,"pistachio":5,"creme-brulee":5,"cookies-cream":4,"espresso-caramel":4,"dulce-de-leche":3,"pecan-caramel":3,"banana-rum":2,"earl-grey-honey":3,"pb-caramel":4,"amaretto":2,"pineapple-moscato":2,"old-fashioned":3,"classic-truffle":3,"grey-salt-caramel":6};
+  const ids = Object.keys(w), tot = ids.reduce((s,i)=>s+w[i],0);
+  const pick = () => { let r = rnd()*tot; for (const i of ids){ r-=w[i]; if(r<=0) return i; } return ids[0]; };
+  const buddy = {"champagne":"raspberry","lemon":"cheesecake","espresso-caramel":"salted-caramel","old-fashioned":"pecan-caramel","pistachio":"earl-grey-honey"};
+  const locs = ["Bradley Fair","New Market Square","Downtown","Fontainebleau Las Vegas"];
+  const out = [];
+  for (let k=0;k<240;k++){
+    const size = [6,6,6,6,10,10,16,16,30,50][Math.floor(rnd()*10)];
+    const seq = [];
+    while (seq.length<size){ const p = pick(); seq.push(p); if (buddy[p] && rnd()<.55 && seq.length<size) seq.push(buddy[p]); }
+    const counts = {}; seq.forEach(i=>counts[i]=(counts[i]||0)+1);
+    out.push({id:"demo"+k, demo:true, savedAt:new Date(Date.now()-rnd()*60*864e5).toISOString(), location:locs[Math.floor(rnd()*4)],
+      boxSize:size, pieceCount:size, sequence:seq, items:Object.entries(counts).map(([id,qty])=>({id,name:byId(id).name,qty})),
+      captureSeconds: Math.round((2.5+size*1.35+rnd()*4)*10)/10, undos:rnd()<.15?1:0, removals:0});
+  }
+  return demoCache = out;
+}
+["#fLoc","#fRange","#fDemo"].forEach(s => $(s).onchange = renderInsights);
+function bar(label, v, max, suffix, m){
+  return `<div class="barrow">${m?bb(m,"sm"):"<span></span>"}<span>${esc(label)}</span><div class="track"><div class="fill" style="width:${max? (v/max*100).toFixed(1):0}%"></div></div><span class="num small">${suffix}</span></div>`;
+}
+function renderInsights(){
+  let list = boxes.slice();
+  if ($("#fDemo").checked) list = list.concat(demoBoxes());
+  if ($("#fLoc").value) list = list.filter(b=>b.location===$("#fLoc").value);
+  const days = +$("#fRange").value;
+  if (days) list = list.filter(b=>Date.now()-new Date(b.savedAt) < days*864e5);
+  const real = list.filter(b=>!b.demo).length;
+  $("#insLbl").textContent = `${list.length} boxes${list.length!==real?` (${real} logged, ${list.length-real} sample)`:""}`;
+  if (!list.length){
+    $("#insStats").innerHTML = ""; ["#topBars","#pairs","#sizeBars","#timeBars"].forEach(s=>$(s).innerHTML="");
+    $("#topBars").innerHTML = `<div class="empty">No boxes match. Log boxes at the counter, or turn on sample boxes to preview this view.</div>`;
+    return;
+  }
+  const pieces = {}, inBox = {}, pairs = {};
+  list.forEach(b => {
+    b.items.forEach(i => { pieces[i.id]=(pieces[i.id]||0)+i.qty; inBox[i.id]=(inBox[i.id]||0)+1; });
+    const u = b.items.map(i=>i.id).sort();
+    for (let a=0;a<u.length;a++) for (let c=a+1;c<u.length;c++){ const k=u[a]+"|"+u[c]; pairs[k]=(pairs[k]||0)+1; }
+  });
+  const totalPieces = Object.values(pieces).reduce((s,v)=>s+v,0);
+  const top = Object.entries(pieces).sort((a,b)=>b[1]-a[1]);
+  const N = list.length;
+  $("#insStats").innerHTML = `
+    <div class="stat"><div class="v">${totalPieces}</div><div class="k">Pieces sold in boxes</div></div>
+    <div class="stat"><div class="v">${byId(top[0][0]).name}</div><div class="k">Most-picked piece</div></div>
+    <div class="stat"><div class="v">${(totalPieces/N).toFixed(1)}</div><div class="k">Average pieces per box</div></div>
+    <div class="stat"><div class="v">${Math.round(inBox[top[0][0]]/N*100)}%</div><div class="k">Boxes with the top piece</div></div>`;
+  $("#topBars").innerHTML = top.slice(0,12).map(([id,v])=>bar(byId(id).name, v, top[0][1], v, byId(id))).join("");
+  const minSupport = Math.max(2, Math.round(N*0.02));
+  const pr = Object.entries(pairs).filter(([,c])=>c>=minSupport).map(([k,c])=>{
+    const [a,b] = k.split("|"); return {a,b,c,lift:(c/N)/((inBox[a]/N)*(inBox[b]/N))};
+  }).sort((x,y)=> (y.lift*Math.sqrt(y.c)) - (x.lift*Math.sqrt(x.c))).slice(0,8);
+  $("#pairs").innerHTML = pr.length ? pr.map(p=>`<div class="pair"><span class="duo">${bb(byId(p.a),"sm")}${bb(byId(p.b),"sm")}</span>
+     <span>${esc(byId(p.a).name)} with ${esc(byId(p.b).name)}<br><span class="small muted">${p.c} boxes</span></span>
+     <span class="lift ${p.lift>=1.3?'hi':''}">${p.lift.toFixed(1)}× chance</span></div>`).join("")
+    : `<p class="muted">Pairs appear once a few boxes share pieces.</p>`;
+  const sz = {}; list.forEach(b=>{ const k=b.boxSize||"Other"; sz[k]=(sz[k]||0)+1; });
+  const szE = Object.entries(sz).sort((a,b)=>(+a[0]||999)-(+b[0]||999));
+  const szMax = Math.max(...szE.map(e=>e[1]));
+  $("#sizeBars").innerHTML = szE.map(([k,v])=>bar(k==="Other"?"Other size":`${k} pieces`, v, szMax, v)).join("");
+  const tm = szE.map(([k])=>[k, median(list.filter(b=>String(b.boxSize||"Other")===k).map(b=>b.captureSeconds))]);
+  const tMax = Math.max(...tm.map(e=>e[1]||0));
+  $("#timeBars").innerHTML = tm.map(([k,v])=>bar(k==="Other"?"Other size":`${k} pieces`, v||0, tMax, fmt(v))).join("");
+}
+
+/* ---------- menu editor ---------- */
+function renderMenu(){
+  $("#menuRows").innerHTML = menu.map((m,i)=>`
+    <div class="menu-row ${m.active?'':'off'}" data-i="${i}">
+      ${bb(m)}
+      <input type="text" value="${esc(m.name)}" data-f="name" aria-label="Piece name">
+      <select data-f="shell" aria-label="Shell">${Object.keys(SHELL).map(s=>`<option ${m.shell===s?"selected":""}>${s}</option>`).join("")}</select>
+      <select data-f="deco" aria-label="Decoration">${["dot","half","sparkle","stripe","gold","cup","dust","drizzle"].map(d=>`<option ${m.deco===d?"selected":""}>${d}</option>`).join("")}</select>
+      <input type="color" value="${esc(m.top)}" data-f="top" aria-label="Accent color">
+      <div class="row" style="gap:4px;flex-wrap:nowrap">
+        <button class="x" data-mv="-1" aria-label="Move earlier">↑</button>
+        <button class="x" data-mv="1" aria-label="Move later">↓</button>
+        <label class="toggle small"><input type="checkbox" data-f="active" ${m.active?"checked":""}> In case</label>
+      </div>
+    </div>`).join("");
+  $("#menuRows").querySelectorAll(".menu-row").forEach(r => {
+    const i = +r.dataset.i;
+    r.querySelectorAll("[data-f]").forEach(inp => inp.onchange = () => {
+      const f = inp.dataset.f; menu[i][f] = f==="active" ? inp.checked : inp.value;
+      persistMenu(); renderMenu(); renderGrid();
+    });
+    r.querySelectorAll("[data-mv]").forEach(b => b.onclick = () => {
+      const j = i + +b.dataset.mv; if (j<0||j>=menu.length) return;
+      [menu[i],menu[j]] = [menu[j],menu[i]]; persistMenu(); renderMenu(); renderGrid();
+    });
+  });
+}
+$("#addPiece").onclick = () => {
+  const name = prompt("Name of the new piece (for example, a seasonal flavor):");
+  if (!name || !name.trim()) return;
+  let id = name.trim().toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "piece";
+  while (menu.some(m=>m.id===id)) id += "-2";
+  menu.push({id, name:name.trim(), shell:"dark", top:"#9e8959", deco:"dot", active:true});
+  persistMenu(); renderMenu(); renderGrid();
+};
+$("#resetMenu").onclick = () => { if (confirm("Restore the default case layout? Saved boxes are kept.")){ menu = DEFAULT_MENU.map(m=>({...m})); persistMenu(); renderMenu(); renderGrid(); } };
+
+/* ---------- keyboard: Enter saves, Backspace undoes ---------- */
+document.addEventListener("keydown", e => {
+  if ($("#v-counter").hidden || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if (e.key==="Backspace"){ e.preventDefault(); $("#undo").click(); }
+  if (e.key==="Enter" && !$("#save").disabled && !e.target.closest("button")){ e.preventDefault(); saveBox(); }
+});
+
+renderCounter(); setSync();
+initDb();
+})();
+</script>
+</body>
+</html>
