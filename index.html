@@ -1,18 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cocoa Dolce Box Log</title>
+<title>Build Your Box | Cocoa Dolce</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f4efeb; --surface:#fffcf9; --surface-2:#efe6dd; --ink:#2b1d17; --ink-soft:#6d5a4e;
-  --line:#e0d3c6; --gold:#9e8959; --gold-ink:#6f5f36; --cocoa:#3b2219; --ok:#4f7a4a; --warn:#a4462f;
+  /* Central brand tokens (Cocoa Dolce site alignment pass). Every other color
+     variable below is an alias onto these five so no hex is duplicated. */
+  --color-bg:#ffffff; --color-bg-secondary:#f2eee7; --color-primary:#817151; --color-disabled:#cdc3af; --color-text:#000000;
+  --bg:var(--color-bg); --surface:var(--color-bg); --surface-2:var(--color-bg-secondary); --ink:var(--color-text); --ink-soft:#6d5a4e;
+  --line:#e0d3c6; --gold:var(--color-primary); --gold-ink:#6f5f36; --cocoa:#3b2219; --ok:#4f7a4a; --warn:#a4462f;
   --tray:#2b1a14; --tray-slot:#3d281f; --shadow:0 1px 0 rgba(43,29,23,.06),0 8px 24px -14px rgba(43,29,23,.35);
-  --serif:"Cormorant Garamond","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  /* Giriton is the brand typeface used on the live Cocoa Dolce site; no licensed
+     local font file exists in this repo (checked before writing this rule), so
+     it is named first and falls back to the existing elegant serif stack. */
+  --serif:"Giriton","Cormorant Garamond","Iowan Old Style","Palatino Linotype",Georgia,serif;
   --sans:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){
@@ -144,7 +150,6 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .pair .duo .bb+.bb{margin-left:-8px}
 .lift{font-size:12px;border-radius:999px;padding:3px 9px;background:var(--surface-2);white-space:nowrap}
 .lift.hi{background:var(--gold);color:#fff}
-.watch{font-family:var(--serif);font-size:56px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
 .empty{padding:28px;text-align:center;color:var(--ink-soft)}
 .menu-row{display:grid;grid-template-columns:40px 1fr 110px 110px 120px auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .menu-row input[type=text],.menu-row select,.field{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit;width:100%}
@@ -168,25 +173,71 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
 }
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="counter.css">
+<link rel="stylesheet" href="counter-builder.css">
+<script src="counter-products.js"></script>
+<script src="counter-catalog-state.js"></script>
+<script src="counter-selection.js"></script>
+<script src="counter-box.js"></script>
+<script src="counter-catalog.js"></script>
+<script src="counter-manage.js"></script>
+<script src="counter-resize.js"></script>
+<script src="counter-transactions.js"></script>
+<script src="counter-foundation.js"></script>
 </head>
 <body>
 <header>
-  <div class="mark"><b>Cocoa Dolce</b><span>box log</span></div>
-  <nav role="tablist">
-    <button role="tab" data-view="counter" aria-selected="true">Counter</button>
-    <button role="tab" data-view="boxes" aria-selected="false">Boxes</button>
-    <button role="tab" data-view="insights" aria-selected="false">Insights</button>
-    <button role="tab" data-view="menu" aria-selected="false">Case layout</button>
+  <div class="brand-area">
+    <img class="brand-logo" src="assets/logo/cocoa-dolce_flamingo_k.svg" alt="Cocoa Dolce" width="96" height="61">
+    <h1>Build Your Box</h1>
+  </div>
+  <nav aria-label="Primary navigation">
+    <button data-view="counter" aria-current="page" aria-selected="true">Counter</button>
+    <button data-view="boxes" aria-selected="false">Boxes</button>
+    <button data-view="insights" aria-selected="false">Insights</button>
+    <button data-view="manage" aria-selected="false">Manage</button>
   </nav>
-  <select class="loc" id="loc" aria-label="Shop location">
-    <option>Bradley Fair</option><option>New Market Square</option><option>Downtown</option><option>Fontainebleau Las Vegas</option>
-  </select>
-  <span class="sync" id="sync">Saving on this device</span>
+  <span id="sync" hidden></span>
 </header>
 
 <main>
   <!-- COUNTER -->
-  <section class="view" id="v-counter">
+  <section class="view" id="v-counter" aria-label="Counter">
+    <div class="foundation">
+      <section class="catalog" aria-labelledby="catalog-title">
+        <div class="catalog-top"><h2 id="catalog-title">Chocolates</h2><div class="catalog-tools"><span id="catalog-result"></span><div class="catalog-filter"><button type="button" class="catalog-filter-toggle" id="catalog-filter-toggle" aria-haspopup="true" aria-expanded="false">Filter</button><div class="catalog-filter-menu" id="catalog-filter-menu" role="menu" aria-label="Filter chocolates by category" hidden><button type="button" data-filter="all" role="menuitemradio" aria-checked="true">All</button><button type="button" data-filter="basic" role="menuitemradio" aria-checked="false">Basic</button><button type="button" data-filter="seasonal" role="menuitemradio" aria-checked="false">Seasonal</button><button type="button" data-filter="cocoshots" role="menuitemradio" aria-checked="false">CocoShots</button></div></div></div></div>
+        <div class="chocolate-grid"></div>
+        <p class="catalog-empty" id="catalog-empty" hidden>No chocolates available in this category.</p>
+      </section>
+      <div class="counter-divider" role="separator" aria-label="Resize Chocolates and Your Box panels" tabindex="0"></div><aside class="builder" aria-labelledby="builder-title">
+        <div class="builder-heading"><h2 id="builder-title">Your Box</h2></div>
+        <span class="box-size-label" id="size-label">BOX SIZE</span>
+        <div class="box-size-options" role="group" aria-labelledby="size-label"><button type="button" data-capacity-option="6" aria-label="6 pieces" aria-pressed="true">6</button><button type="button" data-capacity-option="10" aria-label="10 pieces" aria-pressed="false">10</button><button type="button" data-capacity-option="16" aria-label="16 pieces" aria-pressed="false">16</button><button type="button" data-capacity-option="30" aria-label="30 pieces" aria-pressed="false">30</button><button type="button" data-capacity-option="50" aria-label="50 pieces" aria-pressed="false">50</button></div>
+        <div class="box-visual">
+          <div class="box-scene"><img src="assets/box/top-view-6.png" alt="Empty six-piece box, top-down view" width="1536" height="1024"></div>
+          <button type="button" class="box-undo" data-action="undo" disabled aria-label="Undo last change"><svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h10a5 5 0 0 1 0 10h-3"/><path d="M7 6 3 10l4 4"/></svg><span>Undo</span></button>
+          <button type="button" class="box-reset" data-action="reset" disabled aria-label="Reset box"><svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span>Reset</span></button>
+        </div>
+        <div class="piece-progress"><span class="piece-count"><strong id="foundation-count" aria-live="polite">0 / 6</strong><span>pieces in your box</span></span><span class="box-complete-badge" id="box-complete" hidden aria-live="polite">&#10003; Box Complete!</span></div>
+        <div class="box-summary"><p>No chocolates selected.</p></div>
+        <div class="builder-controls"><button class="save-box" disabled>Save Box</button><button type="button" class="capture-box" data-action="capture"><svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6l1.5-2h5L16 6h4a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><circle cx="12" cy="13" r="4"/></svg><span>Capture</span></button></div>
+        <p class="builder-footnote">Select chocolates to fill your box.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="view" id="v-manage" aria-label="Manage Chocolates" hidden>
+    <div class="manage-page section">
+      <div class="manage-heading"><div><h2>Manage Chocolates</h2><p class="muted small">Manage availability, order, and catalog items.</p></div><button type="button" class="manage-done" data-manage-done>Done</button></div>
+      <div id="manage-grid-host"></div>
+    </div>
+    <dialog id="manage-add-dialog" class="counter-dialog" aria-labelledby="manage-add-title">
+      <form id="manage-add-form" method="dialog"><h2 id="manage-add-title">Add Chocolate</h2><label for="manage-name">Chocolate Name</label><input class="field" id="manage-name" name="name" required autocomplete="off"><label for="manage-category">Category</label><select class="field" id="manage-category" name="category" required><option value="basic">Basic</option><option value="seasonal">Seasonal</option><option value="cocoshot">CocoShots</option></select><label for="manage-image">Image</label><div class="manage-file-row"><label class="manage-file-button" for="manage-image">Choose Image</label><span class="manage-file-name" id="manage-file-name">No file chosen</span><input class="manage-file-input" id="manage-image" name="image" type="file" accept="image/*"></div><p class="manage-form-error" id="manage-form-error" role="alert" hidden></p><div class="dialog-actions"><button type="button" data-manage-cancel>Cancel</button><button type="submit">Add Chocolate</button></div></form>
+    </dialog>
+    <dialog id="manage-done-dialog" class="counter-dialog" aria-labelledby="manage-done-title"><h2 id="manage-done-title">Are you sure?</h2><p>Finish managing the catalog?</p><div class="dialog-actions"><button type="button" data-manage-done-cancel>Cancel</button><button type="button" data-manage-done-confirm>Done</button></div></dialog>
+  </section>
+  <!-- Retained legacy transaction UI and hooks for later phases. Not navigable. -->
+  <section class="view" id="v-legacy-counter" hidden inert>
     <div class="counter">
       <div>
         <div class="grid" id="grid"></div>
@@ -234,25 +285,6 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
       <div class="stats" id="timeStats"></div>
       <div class="scroll"><table id="boxTable"></table></div>
     </div>
-
-    <div class="section">
-      <h2>Measure the time it adds</h2>
-      <p class="muted" style="max-width:68ch">Time a few boxes the old way with this stopwatch: start when the first piece is picked up, stop when the lid closes. The app times logged boxes the same way, from the first tap to save. The difference is the time the log adds.</p>
-      <div class="two" style="margin-top:12px">
-        <div>
-          <div class="row" style="margin-bottom:10px">
-            <span class="small muted">Box size</span>
-            <select class="field" id="bSize" style="width:auto"></select>
-          </div>
-          <div class="watch" id="watch">0.0 s</div>
-          <div class="row" style="margin-top:12px">
-            <button class="btn gold" id="bStart">Start</button>
-            <button class="btn" id="bStop" disabled>Stop and record</button>
-          </div>
-        </div>
-        <div id="compare"></div>
-      </div>
-    </div>
   </section>
 
   <!-- INSIGHTS -->
@@ -296,7 +328,7 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
   <h3 style="font-family:var(--serif);font-size:22px;margin:0 0 8px" id="fbTitle">Copy export</h3>
   <p class="small muted">Downloads aren't available in this view. Copy the text below into a file.</p>
   <textarea id="fbText" readonly></textarea>
-  <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" id="fbCopy">Copy</button><button class="btn gold" id="fbClose">Close</button></div>
+  <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" id="fbCopy">Copy</button><button class="btn gold" id="fbDownload">Download</button><button class="btn" id="fbClose">Cancel</button></div>
 </dialog>
 
 <script>
@@ -330,22 +362,21 @@ const DEFAULT_MENU = [
 ].map(([id,name,shell,top,deco])=>({id,name,shell,top,deco,active:true}));
 
 const SIZES = [6,10,16,30,50];
-const LS = {boxes:"cd-boxes-v1", menu:"cd-menu-v1", loc:"cd-loc", base:"cd-baseline-v1", pend:"cd-pending-v1"};
+const LS = {boxes:"cd-boxes-v1", menu:"cd-menu-v1", loc:"cd-loc", pend:"cd-pending-v1"};
 const lsGet = (k,d) => { try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } };
 const lsSet = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
 
 /* ---------- state ---------- */
 let menu = lsGet(LS.menu, null) || DEFAULT_MENU.map(m=>({...m}));
 let boxes = lsGet(LS.boxes, []);
-let baseline = lsGet(LS.base, []);
+if(!Array.isArray(boxes))boxes=[];
 let db = null, dbLive = false;
 let box = freshBox(null);
 let autoTimer = null, tick = null;
 let lastSaved = null; // {rec, pieces} shown until the next box starts
 let autoOn = lsGet("cd-savemode-v2", "manual") === "auto";
-const loc = $("#loc");
-loc.value = lsGet(LS.loc, "Bradley Fair");
-loc.onchange = () => lsSet(LS.loc, loc.value);
+// Existing store configuration is retained without a cashier selector.
+const loc = { value: lsGet(LS.loc, "Bradley Fair") };
 
 function freshBox(size){ return {size, pieces:[], startedAt:null, undos:0, removals:0}; }
 const byId = id => menu.find(m=>m.id===id) || {id, name:id, shell:"dark", top:"#999", deco:"dot"};
@@ -354,7 +385,10 @@ const uid = () => "bx_" + Date.now().toString(36) + Math.random().toString(36).s
 
 /* ---------- tabs ---------- */
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
-  document.querySelectorAll("nav button").forEach(x => x.setAttribute("aria-selected", x===b));
+  document.querySelectorAll("nav button").forEach(x => {
+    x.setAttribute("aria-selected", x===b);
+    if (x===b) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current");
+  });
   document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== "v-"+b.dataset.view);
   if (b.dataset.view==="boxes") renderBoxes();
   if (b.dataset.view==="insights") renderInsights();
@@ -572,6 +606,7 @@ function toCSV(list){
   });
   return [head.join(","), ...rows].join("\n");
 }
+let currentExport = null; // {kind, filename, data} backing the preview/Copy/Download popup, always the same source
 async function exportFile(kind){
   if (!boxes.length){ nudge("No boxes saved yet."); return; }
   const stamp = new Date().toISOString().slice(0,10);
@@ -583,12 +618,26 @@ async function exportFile(kind){
     try{ await dl.save({filename, data}); return; }
     catch(e){ if (e && e.code==="declined") return; if (e && e.code==="rate_limited"){ nudge("A save prompt is already open."); return; } }
   }
-  $("#fbTitle").textContent = filename; $("#fbText").value = data; $("#fallback").showModal();
+  currentExport = {kind, filename, data};
+  $("#fbTitle").textContent = filename; $("#fbText").value = data; $("#fbCopy").textContent = "Copy"; $("#fallback").showModal();
+}
+function downloadTextFile(filename, data, mime){
+  const blob = new Blob([data], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 $("#expCsv").onclick = () => exportFile("csv");
 $("#expJson").onclick = () => exportFile("json");
 $("#fbClose").onclick = () => $("#fallback").close();
 $("#fbCopy").onclick = async () => { try{ await navigator.clipboard.writeText($("#fbText").value); $("#fbCopy").textContent="Copied"; }catch(e){ $("#fbText").select(); } };
+$("#fbDownload").onclick = () => {
+  if (!currentExport) return;
+  const mime = currentExport.kind==="csv" ? "text/csv;charset=utf-8" : "application/json;charset=utf-8";
+  downloadTextFile(currentExport.filename, currentExport.data, mime);
+};
 
 /* ---------- boxes view ---------- */
 const median = a => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; };
@@ -616,38 +665,6 @@ function renderBoxes(){
         <td><button class="x" data-del="${esc(b.id)}" aria-label="Delete box">Delete</button></td></tr>`).join("") + "</tbody>";
     $("#boxTable").querySelectorAll("[data-del]").forEach(x => x.onclick = () => { if (confirm("Delete this box record?")) deleteBox(x.dataset.del); });
   }
-  renderCompare();
-}
-
-/* baseline stopwatch */
-$("#bSize").innerHTML = SIZES.map(s=>`<option>${s}</option>`).join("");
-let bStart = null, bTick = null;
-$("#bStart").onclick = () => {
-  bStart = performance.now(); $("#bStart").disabled = true; $("#bStop").disabled = false;
-  bTick = setInterval(()=>$("#watch").textContent = ((performance.now()-bStart)/1000).toFixed(1)+" s", 100);
-};
-$("#bStop").onclick = () => {
-  clearInterval(bTick);
-  const s = Math.round((performance.now()-bStart)/100)/10;
-  baseline.push({size:+$("#bSize").value, seconds:s, at:new Date().toISOString()});
-  lsSet(LS.base, baseline);
-  bStart=null; $("#bStart").disabled=false; $("#bStop").disabled=true; $("#watch").textContent = s.toFixed(1)+" s";
-  renderCompare();
-};
-function renderCompare(){
-  const sizes = [...new Set([...baseline.map(b=>b.size), ...boxes.filter(b=>b.boxSize).map(b=>b.boxSize)])].sort((a,b)=>a-b);
-  if (!sizes.length){ $("#compare").innerHTML = `<p class="muted">Record a few timed boxes both ways to see the difference.</p>`; return; }
-  $("#compare").innerHTML = `<div class="scroll"><table><thead><tr><th>Box</th><th class="num">Without log</th><th class="num">With log</th><th class="num">Added</th></tr></thead><tbody>${
-    sizes.map(s=>{
-      const bl = baseline.filter(b=>b.size===s).map(b=>b.seconds);
-      const ap = boxes.filter(b=>b.boxSize===s).map(b=>b.captureSeconds);
-      const mb = median(bl), ma = median(ap);
-      const add = mb!=null && ma!=null ? ma-mb : null;
-      return `<tr><td>${s} pieces</td><td class="num">${fmt(mb)} <span class="muted small">(${bl.length})</span></td><td class="num">${fmt(ma)} <span class="muted small">(${ap.length})</span></td><td class="num"><b>${add==null?"–":(add>=0?"+":"")+add.toFixed(1)+" s"}</b></td></tr>`;
-    }).join("")}</tbody></table></div>
-    <p class="small muted">Medians, with the number of timed boxes in brackets. Aim for at least 10 each way.</p>
-    ${baseline.length?`<button class="x" id="clrBase">Clear stopwatch times</button>`:""}`;
-  const c = $("#clrBase"); if (c) c.onclick = () => { if(confirm("Clear all stopwatch times?")){ baseline=[]; lsSet(LS.base, baseline); renderCompare(); } };
 }
 
 /* ---------- insights ---------- */
@@ -673,8 +690,11 @@ function demoBoxes(){
   return demoCache = out;
 }
 ["#fLoc","#fRange","#fDemo"].forEach(s => $(s).onchange = renderInsights);
+function insightsThumbnail(product){
+  return product.image ? `<img class="insights-chocolate" src="${esc(product.image)}" alt="" width="36" height="36">` : '<span class="insights-chocolate insights-missing" aria-hidden="true">&ndash;</span>';
+}
 function bar(label, v, max, suffix, m){
-  return `<div class="barrow">${m?bb(m,"sm"):"<span></span>"}<span>${esc(label)}</span><div class="track"><div class="fill" style="width:${max? (v/max*100).toFixed(1):0}%"></div></div><span class="num small">${suffix}</span></div>`;
+  return `<div class="barrow">${m?insightsThumbnail(m):"<span></span>"}<span>${esc(label)}</span><div class="track"><div class="fill" style="width:${max? (v/max*100).toFixed(1):0}%"></div></div><span class="num small">${suffix}</span></div>`;
 }
 function renderInsights(){
   let list = boxes.slice();
@@ -689,6 +709,8 @@ function renderInsights(){
     $("#topBars").innerHTML = `<div class="empty">No boxes match. Log boxes at the counter, or turn on sample boxes to preview this view.</div>`;
     return;
   }
+  const savedNames=new Map(list.flatMap(b=>b.items.map(i=>[i.id,i.name])));
+  const insightProduct=id=>COUNTER_PRODUCTS.find(p=>p.id===id)||COUNTER_PRODUCTS.find(p=>p.name===savedNames.get(id))||{id,name:savedNames.get(id)||byId(id).name};
   const pieces = {}, inBox = {}, pairs = {};
   list.forEach(b => {
     b.items.forEach(i => { pieces[i.id]=(pieces[i.id]||0)+i.qty; inBox[i.id]=(inBox[i.id]||0)+1; });
@@ -700,16 +722,16 @@ function renderInsights(){
   const N = list.length;
   $("#insStats").innerHTML = `
     <div class="stat"><div class="v">${totalPieces}</div><div class="k">Pieces sold in boxes</div></div>
-    <div class="stat"><div class="v">${byId(top[0][0]).name}</div><div class="k">Most-picked piece</div></div>
+    <div class="stat"><div class="v">${esc(insightProduct(top[0][0]).name)}</div><div class="k">Most-picked piece</div></div>
     <div class="stat"><div class="v">${(totalPieces/N).toFixed(1)}</div><div class="k">Average pieces per box</div></div>
     <div class="stat"><div class="v">${Math.round(inBox[top[0][0]]/N*100)}%</div><div class="k">Boxes with the top piece</div></div>`;
-  $("#topBars").innerHTML = top.slice(0,12).map(([id,v])=>bar(byId(id).name, v, top[0][1], v, byId(id))).join("");
+  $("#topBars").innerHTML = top.slice(0,12).map(([id,v])=>bar(insightProduct(id).name, v, top[0][1], v, insightProduct(id))).join("");
   const minSupport = Math.max(2, Math.round(N*0.02));
   const pr = Object.entries(pairs).filter(([,c])=>c>=minSupport).map(([k,c])=>{
     const [a,b] = k.split("|"); return {a,b,c,lift:(c/N)/((inBox[a]/N)*(inBox[b]/N))};
   }).sort((x,y)=> (y.lift*Math.sqrt(y.c)) - (x.lift*Math.sqrt(x.c))).slice(0,8);
-  $("#pairs").innerHTML = pr.length ? pr.map(p=>`<div class="pair"><span class="duo">${bb(byId(p.a),"sm")}${bb(byId(p.b),"sm")}</span>
-     <span>${esc(byId(p.a).name)} with ${esc(byId(p.b).name)}<br><span class="small muted">${p.c} boxes</span></span>
+  $("#pairs").innerHTML = pr.length ? pr.map(p=>`<div class="pair"><span class="duo">${insightsThumbnail(insightProduct(p.a))}${insightsThumbnail(insightProduct(p.b))}</span>
+     <span>${esc(insightProduct(p.a).name)} with ${esc(insightProduct(p.b).name)}<br><span class="small muted">${p.c} boxes</span></span>
      <span class="lift ${p.lift>=1.3?'hi':''}">${p.lift.toFixed(1)}× chance</span></div>`).join("")
     : `<p class="muted">Pairs appear once a few boxes share pieces.</p>`;
   const sz = {}; list.forEach(b=>{ const k=b.boxSize||"Other"; sz[k]=(sz[k]||0)+1; });
@@ -760,11 +782,16 @@ $("#resetMenu").onclick = () => { if (confirm("Restore the default case layout? 
 
 /* ---------- keyboard: Enter saves, Backspace undoes ---------- */
 document.addEventListener("keydown", e => {
-  if ($("#v-counter").hidden || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if ($("#v-legacy-counter").hidden || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
   if (e.key==="Backspace"){ e.preventDefault(); $("#undo").click(); }
   if (e.key==="Enter" && !$("#save").disabled && !e.target.closest("button")){ e.preventDefault(); saveBox(); }
 });
 
+const catalogProducts=CounterCatalogState.products();
+const foundation=mountCounterFoundation({ products:catalogProducts, escapeHTML: esc, transactionLocation:loc.value, onSaved:records=>{boxes=records;} });
+CounterCatalogState.subscribe(products=>foundation.refreshProducts(products));
+mountCounterManage({escapeHTML:esc});
+mountCounterResize();
 renderCounter(); setSync();
 initDb();
 })();

@@ -1,0 +1,40 @@
+classId,id,name,type,contains,active,image,description
+0,turtle,Turtle,basic,soy|milk|nuts,True,/chocolates/turtle.png,"Pecan pieces in a soft, lightly salted vanilla bean caramel."
+1,champagne,Champagne,basic,soy|milk|alcohol,True,/chocolates/champagne.png,"Sweet ganache made with Spanish brut cava, topped with sparkling sugar."
+2,grey_salt_caramel,Grey Salt Caramel,basic,soy|milk,True,/chocolates/grey_salt_caramel.png,"Chewy vanilla bean caramel in 54% chocolate, finished with artisan salt."
+3,bananas_foster,Bananas Foster,basic,soy|milk|alcohol,True,/chocolates/bananas_foster.png,Banana ganache with dark rum and cinnamon.
+4,brownie_batter,Brownie Batter,basic,soy|milk,True,/chocolates/brownie_batter.png,"Dark ganache blended with cocoa powder, vanilla bean and salt."
+5,cheesecake,Cheesecake,basic,soy|milk|wheat,True,/chocolates/cheesecake.png,White chocolate cheesecake ganache layered with housemade graham cracker.
+6,confetti_cake,Confetti Cake,basic,soy|milk|wheat|nuts,True,/chocolates/confetti_cake.png,Gold chocolate ganache with almond and a confetti crumb layer.
+7,amaretto,Amaretto,basic,soy|milk|nuts|alcohol,True,/chocolates/amaretto.png,Milk chocolate ganache with almond liqueur.
+8,cookies_cream,Cookies & Cream,basic,soy|milk|wheat,True,/chocolates/cookies_cream.png,Chocolate cookie crumble layered with vanilla bean ganache.
+9,creme_brulee,Creme Brulee,basic,soy|milk|eggs,True,/chocolates/creme_brulee.png,Custard ganache finished with white chocolate and raw sugar.
+10,dulce_de_leche,Dulce de Leche,basic,soy|milk|alcohol,True,/chocolates/dulce_de_leche.png,Dulce de leche caramel with coffee milk ganache and Irish cream.
+11,espresso_martini,Espresso Martini,basic,soy|milk|alcohol,True,/chocolates/espresso_martini.png,Espresso vodka caramel under a milk and dark ganache blend.
+12,key_lime_pie,Key Lime Pie,basic,soy|milk|wheat,True,/chocolates/key_lime_pie.png,Tart key lime white chocolate ganache with graham cracker crumb.
+13,manhattan,Manhattan,basic,soy|milk|alcohol,True,/chocolates/manhattan.png,Whiskey milk ganache with a cherry fruit paste layer.
+14,peanut_butter_caramel,Peanut Butter Caramel,basic,soy|milk|nuts,True,/chocolates/peanut_butter_caramel.png,Peanut butter white ganache layered with soft caramel and peanuts.
+15,pineapple_moscato,Pineapple Moscato,basic,soy|milk|alcohol,True,/chocolates/pineapple_moscato.png,Pineapple fruit paste with moscato-infused white ganache.
+16,pistachio,Pistachio,basic,soy|milk|wheat|nuts,True,/chocolates/pistachio.png,White chocolate pistachio ganache over a pistachio crunch layer.
+17,raspberry,Raspberry,basic,soy|milk|alcohol,True,/chocolates/raspberry.png,Dark ganache with raspberry puree and black raspberry liqueur.
+18,salted_caramel,Salted Caramel,basic,soy|milk,True,/chocolates/salted_caramel.png,Housemade salted caramel folded into dark and milk ganache.
+19,tea_honey,Tea & Honey,basic,soy|milk,True,/chocolates/tea_honey.png,White ganache infused with Earl Grey tea and Hawaiian honey.
+20,lemon,Lemon,basic,soy|milk,True,/chocolates/lemon.png,"Bright, tart lemon blended into smooth white chocolate ganache."
+22,caramel_apple_cider,Caramel Apple Cider,seasonal,soy|milk,True,/chocolates/caramel_apple_cider.png,Spiced apple cider blended into a creamy caramel.
+23,creamsicle,Creamsicle,seasonal,soy|milk,False,/chocolates/creamsicle.png,White ganache with orange citrus and vanilla.
+24,maple_cream,Maple Cream,seasonal,soy|milk,True,/chocolates/maple_cream.png,Barrel aged maple syrup whipped into a soft caramel cream.
+25,mint,Mint,seasonal,soy|milk,False,/chocolates/mint.png,Layered dark and white ganache with organic peppermint oil.
+26,peach_cobbler,Peach Cobbler,seasonal,soy|milk|wheat,True,/chocolates/peach_cobbler.png,Peach and vanilla bean ganache over a cinnamon streusel crunch.
+27,pumpkin_spice_latte,Pumpkin Spice Latte,seasonal,soy|milk|alcohol,True,/chocolates/pumpkin_spice_latte.png,Spiced pumpkin and espresso ganache with a touch of bourbon.
+28,smores,S'mores,seasonal,soy|milk|eggs|wheat,True,/chocolates/smores.png,Marshmallow cream layered with housemade graham cracker.
+29,strawberry_shortcake,Strawberry Shortcake,seasonal,soy|milk|wheat|alcohol,False,/chocolates/strawberry_shortcake.png,Strawberry ganache with strawberry fruit paste and a lemon cookie.
+30,shot_bourbon,Bourbon,cocoashot,soy|alcohol,True,/chocolates/shot_bourbon.png,Dark chocolate truffle with double oaked bourbon.
+31,shot_old_fashioned,Old Fashioned,cocoashot,soy|milk|alcohol,True,/chocolates/shot_old_fashioned.png,Whiskey and bitters in a single bite.
+32,shot_tequila,Tequila,cocoashot,soy|alcohol,True,/chocolates/shot_tequila.png,Blanco tequila topped with salt and lime zest.
+33,shot_whiskey,Whiskey,cocoashot,soy|alcohol,True,/chocolates/shot_whiskey.png,Dark chocolate truffle with oaky Irish and American whiskey.
+34,shot_amaretto,Amaretto Shot,cocoashot,soy|milk|alcohol,True,/chocolates/shot_amaretto.png,Milk chocolate truffle with almond liqueur.
+35,shot_chocolate_cake,Chocolate Cake,cocoashot,soy|nuts|alcohol,True,/chocolates/shot_chocolate_cake.png,Dark chocolate with hazelnut liqueur and vanilla vodka.
+36,shot_candy_cane_bark,Candy Cane Bark,cocoashot,soy|milk|alcohol,False,/chocolates/shot_candy_cane_bark.png,"Peppermint schnapps and chocolate liqueur, holiday only."
+37,shot_caramel_apple_pie,Caramel Apple Pie,cocoashot,soy|milk|alcohol,False,/chocolates/shot_caramel_apple_pie.png,"Tequila with apple cider and caramel, holiday only."
+38,shot_snickerdoodle,Snickerdoodle,cocoashot,soy|milk|alcohol,False,/chocolates/shot_snickerdoodle.png,"Cinnamon whiskey with cream liqueur, holiday only."
+-1,other,Other / Unknown,other,,True,,Catch-all tile so a sale is never blocked by a missing flavor. Exclude from model training.
