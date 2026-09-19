@@ -1,0 +1,15 @@
+{
+  "store_id": "1142145a-3596-4a0d-8058-b5926817952c",
+  "boxes": [
+    {
+      "box_size": 6,
+      "pieces": [
+        { "chocolate_code": "turtle", "quantity": 2 },
+        { "chocolate_code": "champagne", "quantity": 2 },
+        { "chocolate_code": "raspberry", "quantity": 2 }
+      ],
+      "capture_seconds": 12.50,
+      "image_filename": null
+    }
+  ]
+}

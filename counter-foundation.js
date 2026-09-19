@@ -47,7 +47,38 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   const complete=root.querySelector('#box-complete');
   const status=root.querySelector('.builder-footnote');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
   const undo=root.querySelector('.box-undo'), reset=root.querySelector('.box-reset'), save=root.querySelector('.save-box');
+  const capture = root.querySelector(".capture-box");
   undo.dataset.action='undo';reset.dataset.action='reset';save.dataset.action='save';
+  capture?.addEventListener("click", async () => {
+  if (!window.ChocoCounterCapture) {
+    status.textContent =
+      "Photo capture interface is not available. Refresh the page and try again.";
+    return;
+  }
+
+  const result = await window.ChocoCounterCapture.open();
+
+  if (result === null) {
+    status.textContent =
+      "Photo capture closed. Your box selections were not changed.";
+    return;
+  }
+
+  if (result.file) {
+    window.ChocoCounterPendingPhoto = result.file;
+
+    status.textContent =
+      "Photo attached to this box. Select Save Box when you are ready.";
+    return;
+  }
+
+  if (result.skipped) {
+    window.ChocoCounterPendingPhoto = null;
+
+    status.textContent =
+      "No photo attached. Select Save Box to save the box contents.";
+  }
+});
   root.insertAdjacentHTML('beforeend',`<dialog class="counter-dialog" id="quantity-dialog" aria-labelledby="quantity-title"><h2 id="quantity-title"></h2><label for="quantity-value">Quantity</label><input id="quantity-value" type="text" inputmode="none" pattern="[0-9]*" autocomplete="off" aria-describedby="quantity-remaining"><p id="quantity-remaining" role="status"></p><div class="quantity-keys">${['1','2','3','4','5','6','7','8','9','Backspace','0'].map(k=>`<button type="button" data-key="${k}" ${k==='Backspace'?'aria-label="Backspace"':''}>${k==='Backspace'?'←':k}</button>`).join('')}</div><div class="dialog-actions"><button data-cancel>Cancel</button><button id="quantity-confirm">Add</button></div></dialog><dialog class="counter-dialog" id="clear-dialog" aria-labelledby="clear-title" aria-describedby="clear-detail"><h2 id="clear-title">Reset this box?</h2><p id="clear-detail"></p><div class="dialog-actions"><button data-cancel autofocus>Cancel</button><button id="clear-confirm">Reset Box</button></div></dialog>`);
   const quantityDialog=root.querySelector('#quantity-dialog'), clearDialog=root.querySelector('#clear-dialog');
   const input=root.querySelector('#quantity-value'), confirm=root.querySelector('#quantity-confirm');
@@ -63,6 +94,19 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
     save.disabled=saving||state.count!==state.capacity;
     status.textContent=state.count===state.capacity?'Box full.':'Select chocolates to fill your box.';
     boxView.render(state,added);
+    const hasPendingPhoto = Boolean(window.ChocoCounterPendingPhoto);
+
+    capture?.classList.toggle("has-photo", hasPendingPhoto);
+
+    if (hasPendingPhoto) {
+      capture?.querySelector("span")?.replaceChildren(
+        document.createTextNode("Photo attached")
+      );
+    } else {
+      capture?.querySelector("span")?.replaceChildren(
+        document.createTextNode("Capture")
+      );
+    }
   }
   function apply(result,added=[],focusSlot=null){if(result.ok){render(result.added||added);if(focusSlot!==null)root.querySelector(`[data-slot="${focusSlot}"]`)?.focus({preventScroll:true});}else if(result.message)status.textContent=result.message;}
   grid.addEventListener('click',e=>{
@@ -86,17 +130,102 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   undo.onclick=()=>apply(selection.undo());
   reset.onclick=()=>{const n=selection.snapshot().count;if(!n)return;root.querySelector('#clear-detail').textContent=`This will remove all ${n} chocolate${n===1?'':'s'}.`;clearDialog.showModal();};
   root.querySelector('#clear-confirm').onclick=()=>{clearDialog.close();apply(selection.clear());};
-  save.onclick=()=>{
-    const state=selection.snapshot();if(saving||state.count!==state.capacity)return;
-    saving=true;save.disabled=true;
-    let saved;
-    try {saved=saveCounterTransaction(state,{location:transactionLocation});}
-    catch(error){saving=false;save.disabled=false;status.textContent="Couldn't save box. Try again.";status.title=error.message;return;}
-    selection.resetTransaction();saving=false;status.removeAttribute('title');render();
-    onSaved(saved.records);
-    notice.innerHTML='<strong>&#10003; Box Saved</strong><span>'+esc(saved.record.id)+'</span><span>'+saved.record.totalPieces+' pieces &middot; '+(saved.record.captureDurationMs/1000).toFixed(1)+' sec</span>';
-    notice.hidden=false;clearTimeout(savedNoticeTimer);savedNoticeTimer=setTimeout(()=>notice.hidden=true,2600);
-  };
+  save.onclick = async () => {
+  const state = selection.snapshot;
+  if (!pieces.length) {
+    const slotIds = [
+      ...document.querySelectorAll("#v-counter [data-slot][data-piece-id]")
+    ]
+      .map((node) => node.dataset.pieceId)
+      .filter(Boolean);
+
+    const counts = new Map();
+
+    for (const id of slotIds) {
+      counts.set(id, (counts.get(id) || 0) + 1);
+    }
+
+    pieces = [...counts.entries()].map(([chocolate_code, quantity]) => ({
+      chocolate_code,
+      quantity
+    }));
+  }
+  if (saving || state.count !== state.capacity) {
+    return;
+  }
+
+  saving = true;
+  save.disabled = true;
+
+  try {
+    const pendingPhoto = window.ChocoCounterPendingPhoto || null;
+    let imageFilename = null;
+
+    if (pendingPhoto) {
+      try {
+        imageFilename = await window.ChocoCounterAPI.uploadBoxImage(
+          pendingPhoto
+        );
+      } catch (error) {
+        if (error.status === 501) {
+          status.textContent =
+            "Cloud photo storage is unavailable. Saving the box contents without a photo.";
+        } else {
+          throw error;
+        }
+      }
+    }
+    console.log("SAVE: about to submit checkout; count:", state.count);
+    const checkout = await window.ChocoCounterAPI.checkoutSelection(
+      state,
+      imageFilename
+    );
+
+    const savedBox = checkout.boxes?.[0];
+
+    window.ChocoCounterPendingPhoto = null;
+
+    selection.resetTransaction();
+    saving = false;
+    render();
+
+    const orderTotal = (checkout.total_cents / 100).toFixed(2);
+
+    notice.innerHTML = `
+      <strong>✓ Box saved</strong>
+      <span>
+        ${esc(savedBox?.box_id || checkout.order_id)}
+        · ${savedBox?.box_total || state.count} pieces
+        · $${orderTotal} order total
+      </span>
+    `;
+
+    notice.hidden = false;
+
+    clearTimeout(savedNoticeTimer);
+    savedNoticeTimer = setTimeout(() => {
+      notice.hidden = true;
+    }, 4000);
+
+    status.removeAttribute("title");
+
+    if (typeof onSaved === "function") {
+      onSaved({
+        checkout,
+        record: savedBox,
+        records: checkout.boxes
+      });
+    }
+  } catch (error) {
+    saving = false;
+    render();
+
+    status.textContent = `Could not save box: ${error.message || "Unknown error"}.`;
+    status.title = error.stack || error.message || "";
+
+    console.error("ChocoCounter checkout failed:", error);
+  }
+};
   root.querySelectorAll('[data-capacity-option]').forEach(b=>b.onclick=()=>apply(selection.setCapacity(Number(b.dataset.capacityOption))));
   render();
   return {getSelection:selection.snapshot,refreshProducts(nextProducts){

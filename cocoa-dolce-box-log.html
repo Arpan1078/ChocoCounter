@@ -183,6 +183,8 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
 <script src="counter-manage.js"></script>
 <script src="counter-resize.js"></script>
 <script src="counter-transactions.js"></script>
+<script src="counter-api.js"></script>
+<script src="counter-capture.js"></script>
 <script src="counter-foundation.js"></script>
 </head>
 <body>
@@ -321,6 +323,186 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
     </div>
   </section>
 </main>
+
+<dialog class="capture-dialog" id="capture-dialog" aria-labelledby="capture-title">
+  <div class="capture-dialog-head">
+    <div>
+      <p class="capture-kicker">Optional training photo</p>
+      <h2 id="capture-title">Capture completed box</h2>
+      <p class="capture-help">
+        Keep the finished box centered and well lit. Retake as often as needed;
+        only the final selected image is used.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="capture-close"
+      data-capture-close
+      aria-label="Close photo capture"
+    >
+      ×
+    </button>
+  </div>
+
+  <div class="capture-methods" role="tablist" aria-label="Photo capture method">
+    <button
+      type="button"
+      class="capture-method is-active"
+      data-capture-method="webcam"
+      role="tab"
+      aria-selected="true"
+    >
+      Webcam
+    </button>
+
+    <button
+      type="button"
+      class="capture-method"
+      data-capture-method="ip-camera"
+      role="tab"
+      aria-selected="false"
+    >
+      Android IP Webcam
+    </button>
+
+    <button
+      type="button"
+      class="capture-method"
+      data-capture-method="upload"
+      role="tab"
+      aria-selected="false"
+    >
+      Upload image
+    </button>
+  </div>
+
+  <section class="capture-pane" data-capture-pane="webcam">
+    <p class="capture-instruction">
+      Connect a USB webcam or use this device’s camera, then select
+      <strong>Start camera</strong>.
+    </p>
+
+    <div class="capture-preview">
+      <video
+        id="capture-webcam-video"
+        autoplay
+        muted
+        playsinline
+        aria-label="Live webcam preview"
+      ></video>
+      <img
+        id="capture-webcam-still"
+        alt="Captured completed chocolate box"
+        hidden
+      >
+    </div>
+
+    <div class="capture-actions">
+      <button type="button" class="btn" id="capture-webcam-start">
+        Start camera
+      </button>
+      <button type="button" class="btn" id="capture-webcam-snap" disabled>
+        Take photo
+      </button>
+      <button type="button" class="btn" id="capture-webcam-retake" hidden>
+        Retake
+      </button>
+    </div>
+  </section>
+
+  <section class="capture-pane" data-capture-pane="ip-camera" hidden>
+    <p class="capture-instruction">
+      On Android, install <strong>IP Webcam</strong>, start its server on the
+      same Wi-Fi network, then enter the phone address shown by the app.
+    </p>
+
+    <ol class="capture-steps">
+      <li>Install and open IP Webcam on the Android phone.</li>
+      <li>Tap “Start server.”</li>
+      <li>Copy the address shown, such as <code>http://192.168.1.45:8080</code>.</li>
+      <li>Place the completed box under the phone camera.</li>
+    </ol>
+
+    <label class="capture-label" for="capture-ip-url">
+      IP Webcam address
+    </label>
+
+    <div class="capture-ip-row">
+      <input
+        id="capture-ip-url"
+        type="url"
+        inputmode="url"
+        placeholder="http://192.168.1.45:8080"
+        autocomplete="off"
+      >
+      <button type="button" class="btn" id="capture-ip-connect">
+        Connect
+      </button>
+    </div>
+
+    <p class="capture-small">
+      If video does not load, use the upload option. Browser mixed-content or
+      phone-server settings may block some IP camera streams.
+    </p>
+
+    <div class="capture-preview">
+      <img
+        id="capture-ip-preview"
+        alt="Android IP Webcam preview"
+        hidden
+      >
+    </div>
+
+    <div class="capture-actions">
+      <button type="button" class="btn" id="capture-ip-snap" disabled>
+        Take photo
+      </button>
+      <button type="button" class="btn" id="capture-ip-retake" hidden>
+        Retake
+      </button>
+    </div>
+  </section>
+
+  <section class="capture-pane" data-capture-pane="upload" hidden>
+    <p class="capture-instruction">
+      Select a clear top-down photo of the completed box from this device.
+    </p>
+
+    <label class="capture-upload-label" for="capture-file-input">
+      Choose image
+      <input
+        id="capture-file-input"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+      >
+    </label>
+
+    <p class="capture-small" id="capture-file-name">
+      JPEG, PNG, or WebP; 10 MB maximum.
+    </p>
+
+    <div class="capture-preview">
+      <img
+        id="capture-upload-preview"
+        alt="Selected completed chocolate box"
+        hidden
+      >
+    </div>
+  </section>
+
+  <div class="capture-status" id="capture-status" role="status" aria-live="polite">
+    Photo capture is optional. Choose Skip photo to proceed without one.
+  </div>
+
+  <div class="capture-footer">
+    <button type="button" class="btn" id="capture-skip">
+      Skip photo
+    </button>
+    <button type="button" class="btn gold" id="capture-confirm" disabled>
+      Use this photo
+    </button>
+  </div>
+</dialog>
 
 <div class="toast" id="toast" hidden><span id="toastMsg"></span><button id="toastBtn">Undo</button></div>
 
