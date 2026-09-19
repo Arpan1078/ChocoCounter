@@ -43,14 +43,14 @@ main {max-width:2000px;padding:24px 2.5% 32px;}
 .box-size-options button[aria-pressed="true"] {background:var(--counter-accent);color:var(--counter-paper);border-color:var(--counter-accent);}
 .box-size-options button:focus-visible {outline-color:var(--counter-accent);}
 /* Supplied fixed-view render, with no crop or CSS recreation. */
-.box-scene {margin:24px 0;}
+.box-scene {margin:24px 0 0;}
 .box-scene img {display:block;width:100%;height:auto;object-fit:contain;margin-inline:auto;}
 .piece-progress {display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--counter-border);padding-bottom:15px;gap:12px;}
 .piece-progress strong {font:500 32px var(--serif);}
 .piece-progress span {font-size:11px;color:var(--counter-muted);}
 .box-summary {padding:22px 0;min-height:78px;}
 .box-summary p {font-size:13px;color:var(--counter-muted);margin:0;}
-.builder-controls {display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:6px;}
+.builder-controls {display:grid;grid-template-columns:1fr;gap:6px;}
 .builder-controls button {min-height:44px;border:1px solid var(--counter-border);border-radius:0;background:transparent;font-size:12px;padding:8px 4px;}
 .builder-controls button:disabled {color:var(--color-disabled);border-color:var(--color-disabled);cursor:not-allowed;}
 .builder-controls .save-box {grid-column:1/-1;font-size:14px;min-height:48px;margin-top:6px;}
@@ -77,7 +77,8 @@ main {max-width:2000px;padding:24px 2.5% 32px;}
   .builder > * {flex-shrink:0;}
   .builder-heading {margin-bottom:16px;}
   .box-size-options button {min-height:48px;font-size:14px;}
-  .box-scene {position:relative;container-type:size;flex:1 0 120px;margin:16px 0;}
+  .box-visual {flex:1 0 120px;margin:16px 0;}
+  .box-scene {position:relative;container-type:size;}
   /* The supplied 1050px square render scales uniformly to either available dimension. */
   .box-scene img {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100%;max-width:100cqh;height:auto;object-fit:contain;}
   .piece-progress {padding-bottom:12px;}

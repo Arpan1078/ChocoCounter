@@ -30,7 +30,9 @@ for(const [capacity,columns] of [[16,4],[30,6],[50,10]]) {
 function mountCounterBox(scene, products, onRemove, onMove) {
   const byId=new Map(products.map(p=>[p.id,p]));
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let editing=false, gesture=null, keyboardColumns=3;
+  // Every occupied slot is permanently interactive: no edit-mode toggle gates
+  // tap-to-remove or drag-to-move/swap. See the pointer handlers below.
+  let gesture=null, keyboardColumns=3;
   function cancelGesture(){
     const previous=gesture;
     gesture=null;
@@ -38,11 +40,10 @@ function mountCounterBox(scene, products, onRemove, onMove) {
     if(previous?.button.hasPointerCapture(previous.id))previous.button.releasePointerCapture(previous.id);
     scene.querySelectorAll('.dragging,.drop-target').forEach(e=>e.classList.remove('dragging','drop-target'));
   }
-  function render(state, edit, added=[]) {
-    cancelGesture();editing=edit;
+  function render(state, added=[]) {
+    cancelGesture();
     const layout=COUNTER_BOX_LAYOUTS[state.capacity];
     keyboardColumns=layout.columns;
-    scene.classList.toggle('editing',edit);
     const buttons=state.slots.map((id,i)=>{
       const p=byId.get(id), pos=layout.slots[i];
       // Prefer the product's true top-down photo; falls back to its catalog
@@ -56,7 +57,7 @@ function mountCounterBox(scene, products, onRemove, onMove) {
       const scale=hasTopView?layout.topScale:layout.fallbackScale;
       const aspect=hasTopView?'1/1':'600/540';
       const style='left:'+pos.x+'%;top:'+pos.y+'%;--piece-scale:'+scale+'%;--piece-aspect:'+aspect+';z-index:'+(i+1);
-      return `<button type="button" class="box-piece ${id?'occupied':''} ${added.includes(i)?'arriving':''}" data-slot="${i}" data-piece-id="${esc(id||'')}" style="${style}" ${id||edit?'':'disabled'} aria-label="Slot ${i+1}${p?`: ${esc(p.name)}${edit?', tap to remove or drag to move':', tap to remove'}`:': empty'}">${p?`<img src="${esc(boxImage)}" alt="" draggable="false">`:`<span class="slot-number">${i+1}</span>`}</button>`;
+      return `<button type="button" class="box-piece ${id?'occupied':''} ${added.includes(i)?'arriving':''}" data-slot="${i}" data-piece-id="${esc(id||'')}" style="${style}" aria-label="Slot ${i+1}${p?`: ${esc(p.name)}, tap to remove or drag to move`:': empty'}">${p?`<img src="${esc(boxImage)}" alt="" draggable="false">`:`<span class="slot-number">${i+1}</span>`}</button>`;
     }).join('');
     if(layout.temporary){
       scene.innerHTML=`<div class="temporary-tray" style="--tray-columns:${layout.columns};--tray-rows:${layout.rows}"><div class="tray-cavities" aria-hidden="true">${state.slots.map(()=>'<span></span>').join('')}</div><div class="box-overlay">${buttons}</div></div>`;
@@ -80,7 +81,7 @@ function mountCounterBox(scene, products, onRemove, onMove) {
   scene.addEventListener('pointermove',e=>{
     if(!gesture||gesture.id!==e.pointerId)return;
     if(Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>8)gesture.drag=true;
-    if(!gesture.drag||!editing)return;
+    if(!gesture.drag)return;
     if(!gesture.ghost){
       const image=gesture.button.querySelector('img'),r=image.getBoundingClientRect();
       gesture.ghost=image.cloneNode();
@@ -99,7 +100,7 @@ function mountCounterBox(scene, products, onRemove, onMove) {
     if(!gesture||gesture.id!==e.pointerId)return;
     const {from,drag}=gesture, target=destination(e.clientX,e.clientY);
     cancelGesture();
-    if(drag){if(editing&&target)onMove(from,Number(target.dataset.slot));}
+    if(drag){if(target)onMove(from,Number(target.dataset.slot));}
     else onRemove(from);
   });
   scene.addEventListener('pointercancel',cancelGesture);
@@ -107,7 +108,7 @@ function mountCounterBox(scene, products, onRemove, onMove) {
   // Pointer removal occurs on pointerup only; generated clicks must never remove twice.
   scene.addEventListener('click',e=>{if(e.detail===0 && e.target.closest('.occupied'))onRemove(Number(e.target.closest('[data-slot]').dataset.slot));});
   scene.addEventListener('keydown',e=>{
-    const b=e.target.closest('.occupied');if(!editing||!b||!e.altKey)return;
+    const b=e.target.closest('.occupied');if(!b||!e.altKey)return;
     const delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-keyboardColumns,ArrowDown:keyboardColumns}[e.key];
     if(delta){e.preventDefault();onMove(Number(b.dataset.slot),Number(b.dataset.slot)+delta);}
   });

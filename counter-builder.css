@@ -5,11 +5,8 @@
 .catalog-item .quantity-badge {position:absolute;right:8px;top:8px;}
 .quantity-open {position:absolute;bottom:3px;right:2px;min-width:44px;min-height:44px;border:0;background:transparent;color:var(--counter-muted);font-size:12px;text-decoration:underline;text-underline-offset:3px;}
 .quantity-open:hover {color:var(--counter-ink);}
-.catalog-editing {opacity:.5;}
-.catalog-editing button {cursor:default;}
 .builder-controls .save-box:not(:disabled) {background:var(--counter-accent);color:var(--counter-paper);border-color:var(--counter-accent);}
-.builder-controls [aria-pressed="true"] {border-color:var(--counter-accent);}
-/* Undo / Edit / Empty Box / Capture: outlined secondary actions, never solid. */
+/* Capture: outlined secondary action, never solid. */
 .builder-controls button:not(.save-box) {border-color:var(--counter-accent);color:var(--counter-accent);background:var(--counter-paper);}
 .builder-controls button:not(.save-box):hover:not(:disabled) {background:var(--color-bg-secondary);}
 .builder-controls button:not(.save-box):disabled {border-color:var(--color-disabled);color:var(--color-disabled);background:var(--counter-paper);}
@@ -19,17 +16,16 @@
 .box-scene .box-render {position:static;transform:none;display:block;width:100%;height:auto;max-width:none;margin:0;object-fit:contain;}
 .box-overlay {position:absolute;inset:0;}
 .box-piece {position:absolute;transform:translate(-50%,-50%);width:var(--piece-scale);aspect-ratio:var(--piece-aspect,600/540);border:0;padding:0;background:transparent;display:grid;place-items:center;pointer-events:none;}
-.editing .box-piece.occupied::after {content:"";position:absolute;inset:-10%;pointer-events:auto;}
+/* Every occupied slot is permanently tap-to-remove / drag-to-move-or-swap; this
+   is not conditional on any edit-mode toggle (there isn't one). The larger inset
+   gives the tap target more forgiving margin than the visible piece alone. */
+.box-piece.occupied::after {content:"";position:absolute;inset:-10%;pointer-events:auto;}
 .box-scene .box-piece img {position:static;width:100%;height:100%;object-fit:contain;object-position:center;pointer-events:none;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4));}
 .box-piece:disabled {cursor:default;opacity:1;}
 .box-piece .slot-number {visibility:hidden;color:var(--counter-muted);font-size:11px;}
-.editing .box-piece {touch-action:none;cursor:grab;outline:1px dashed #b49a6c80;}
-.box-scene.editing {touch-action:none;}
 .piece-drag-preview {position:fixed;transform:translate(-50%,-50%);height:auto;object-fit:contain;pointer-events:none;z-index:100;filter:drop-shadow(0 3px 3px #0005);}
-.editing .box-piece.occupied img {filter:drop-shadow(0 2px 3px #0006);}
-.editing .box-piece:not(.occupied) .slot-number {visibility:visible;}
-.editing .box-piece.dragging {opacity:.55;outline:2px solid var(--counter-accent);}
-.editing .box-piece.drop-target {outline:2px solid var(--counter-ink);background:#ffffff30;}
+.box-piece.dragging {opacity:.55;outline:2px solid var(--counter-accent);}
+.box-piece.drop-target {outline:2px solid var(--counter-ink);background:#ffffff30;}
 .box-piece:focus-visible {outline:2px solid var(--counter-accent);outline-offset:2px;}
 .arriving img {animation:piece-arrive 240ms ease-out;}
 @keyframes piece-arrive {from{opacity:0;translate:0 -12px;scale:.9;}to{opacity:1;translate:0 0;scale:1;}}
@@ -58,13 +54,17 @@
 .dialog-actions button:last-child:disabled {background:var(--color-disabled);border-color:var(--color-disabled);color:#5b5343;opacity:1;}
 @media(max-width:760px){.box-frame{max-width:320px;}}
 @media(min-width:1024px) and (max-width:1499px) and (orientation:landscape){
-  .box-frame {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100%;max-width:100cqh;}
+  /* Bottom-anchored (not vertically centered): when box-scene's available height
+     exceeds what a full-width image needs, any slack collects above the image
+     instead of below it, so the box-visual's bottom edge -- where Undo/Reset
+     are anchored -- always sits right against the image, never far below it. */
+  .box-frame {position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:100cqh;}
 }
 /* Final Phase 3: wider box workspace and compact capacity controls. */
 .box-size-options {grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;}
 .builder-controls .capture-box {grid-column:1/-1;min-height:48px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:7px;}
 .box-piece.occupied {pointer-events:auto;cursor:pointer;touch-action:none;}
-.temporary-tray {position:relative;width:100%;min-width:calc(var(--tray-columns)*44px);aspect-ratio:var(--tray-columns)/var(--tray-rows);background:#24221f;border:5px solid #b49a6c;}
+.temporary-tray {position:relative;width:100%;min-width:calc(var(--tray-columns)*44px);aspect-ratio:var(--tray-columns)/var(--tray-rows);background:#24221f;border:5px solid #b49a6c;margin-bottom:56px;}
 .tray-cavities {position:absolute;inset:0;display:grid;grid-template-columns:repeat(var(--tray-columns),1fr);grid-template-rows:repeat(var(--tray-rows),1fr);}
 .tray-cavities span {border:3px solid #35312b;background:#141413;box-shadow:inset 0 3px 5px #000;}
 @media(min-width:761px){
@@ -78,14 +78,14 @@
 }
 @media(min-width:1024px) and (max-width:1499px) and (orientation:landscape){
   .builder {height:100%;max-height:100%;}
-  .box-scene {flex:1 0 130px;}
+  .box-visual {flex:1 0 130px;}
   .box-frame {max-width:150cqh;}
-  .temporary-tray {margin:auto;}
+  .temporary-tray {margin:auto auto 56px;}
   .chocolate-grid {grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
 }
 @media(max-width:1023px){.box-scene {overflow:auto;}}
 .temporary-tray .box-piece img {transform:none;max-width:none;}
-/* Catalog order editing is separate from the box's editing state. */
+/* Catalog order editing is its own independent mode, unrelated to box pieces. */
 .catalog-tools {display:flex;align-items:center;gap:12px;flex:none;white-space:nowrap;}
 #catalog-edit {min-width:44px;min-height:44px;padding:4px;border:0;background:transparent;color:var(--counter-accent);font-size:12px;text-decoration:underline;text-underline-offset:3px;}
 #catalog-edit:disabled {opacity:.4;cursor:default;}
@@ -108,3 +108,22 @@
 /* Insights uses the same transparent front-view photos as the Counter catalog. */
 #v-insights .insights-chocolate {display:block;width:36px;height:36px;object-fit:contain;object-position:center;background:transparent;border:0;flex:none;}
 #v-insights .insights-missing {display:grid;place-items:center;color:var(--muted);font-size:16px;}
+/* Undo / Reset overlay the box visual's own bottom corners, sitting directly on
+   the light background/mat area below the last row of chocolates (the real box
+   photos have generous clear space there) rather than in a separate row below
+   the image. The placeholder trays (16/30/50) have no such margin of their own
+   -- their cavities run edge to edge -- so a small bottom margin is reserved on
+   the tray element itself (not on the slot grid, which keeps its own coordinates
+   untouched) purely so the controls always land below the last cavity, never on it. */
+.box-visual {position:relative;display:flex;flex-direction:column;margin-bottom:16px;}
+.box-undo,.box-reset {position:absolute;bottom:12px;display:flex;align-items:center;gap:5px;min-height:34px;padding:8px 9px;background:#ffffff;border:1px solid var(--counter-accent);border-radius:3px;color:var(--counter-accent);font-size:12px;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.18);}
+.box-undo {left:14px;}
+.box-reset {right:14px;}
+.box-undo svg,.box-reset svg {width:14px;height:14px;flex:none;}
+.box-undo:hover:not(:disabled),.box-reset:hover:not(:disabled) {background:var(--color-bg-secondary);}
+.box-undo:disabled,.box-reset:disabled {color:var(--color-disabled);border-color:var(--color-disabled);cursor:not-allowed;box-shadow:none;}
+@media(max-width:380px){.box-undo span,.box-reset span{display:none;}.box-undo,.box-reset{padding:8px;}}
+/* The landscape-tablet box render is shorter (bound by available panel height,
+   not width), so its own clear margin below the last row shrinks in step --
+   the overlay controls shrink to match so they still land below every slot. */
+@media(min-width:1024px) and (max-width:1499px) and (orientation:landscape){.box-scene{flex:1 1 auto;min-height:0;}.box-undo,.box-reset{min-height:23px;padding:3px 6px;bottom:8px;font-size:11px;}}

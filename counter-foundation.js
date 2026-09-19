@@ -3,7 +3,7 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   const root=document.querySelector('#v-counter'), selection=createCounterSelection(products);
   const available=products.filter(p=>p.active), byId=new Map(products.map(p=>[p.id,p]));
   const grid=root.querySelector('.chocolate-grid');
-  let editing=false, quantityProduct=null, quantityText='', saving=false, savedNoticeTimer=null;
+  let quantityProduct=null, quantityText='', saving=false, savedNoticeTimer=null;
   grid.innerHTML=available.map(p=>`<div class="catalog-item"><button type="button" class="chocolate-card" data-product-id="${esc(p.id)}" aria-label="Add ${esc(p.name)}"><span class="chocolate-visual" style="--product-background:${esc(p.backgroundColor)}"><img src="${esc(p.image)}" alt="" draggable="false" width="600" height="540"></span><span class="chocolate-name"><span>${esc(p.name)}</span><span class="quantity-badge" aria-hidden="true" hidden></span></span></button><button type="button" class="quantity-open" data-quantity-id="${esc(p.id)}" aria-label="Choose quantity for ${esc(p.name)}">Qty</button></div>`).join('');
   root.querySelector('#catalog-result').textContent=`${available.length} chocolates`;
   const cards=new Map([...grid.querySelectorAll('.chocolate-card')].map(c=>[c.dataset.productId,c]));
@@ -14,31 +14,30 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   const notice=root.querySelector('.transaction-notice');
   const complete=root.querySelector('#box-complete');
   const status=root.querySelector('.builder-footnote');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
-  const [undo,edit,empty,save]=root.querySelectorAll('.builder-controls button');
-  undo.dataset.action='undo';edit.dataset.action='edit';empty.dataset.action='empty';save.dataset.action='save';
-  root.insertAdjacentHTML('beforeend',`<dialog class="counter-dialog" id="quantity-dialog" aria-labelledby="quantity-title"><h2 id="quantity-title"></h2><label for="quantity-value">Quantity</label><input id="quantity-value" type="text" inputmode="none" pattern="[0-9]*" autocomplete="off" aria-describedby="quantity-remaining"><p id="quantity-remaining" role="status"></p><div class="quantity-keys">${['1','2','3','4','5','6','7','8','9','Backspace','0'].map(k=>`<button type="button" data-key="${k}" ${k==='Backspace'?'aria-label="Backspace"':''}>${k==='Backspace'?'←':k}</button>`).join('')}</div><div class="dialog-actions"><button data-cancel>Cancel</button><button id="quantity-confirm">Add</button></div></dialog><dialog class="counter-dialog" id="clear-dialog" aria-labelledby="clear-title"><h2 id="clear-title"></h2><div class="dialog-actions"><button data-cancel autofocus>Cancel</button><button id="clear-confirm">Clear Box</button></div></dialog>`);
+  const undo=root.querySelector('.box-undo'), reset=root.querySelector('.box-reset'), save=root.querySelector('.save-box');
+  undo.dataset.action='undo';reset.dataset.action='reset';save.dataset.action='save';
+  root.insertAdjacentHTML('beforeend',`<dialog class="counter-dialog" id="quantity-dialog" aria-labelledby="quantity-title"><h2 id="quantity-title"></h2><label for="quantity-value">Quantity</label><input id="quantity-value" type="text" inputmode="none" pattern="[0-9]*" autocomplete="off" aria-describedby="quantity-remaining"><p id="quantity-remaining" role="status"></p><div class="quantity-keys">${['1','2','3','4','5','6','7','8','9','Backspace','0'].map(k=>`<button type="button" data-key="${k}" ${k==='Backspace'?'aria-label="Backspace"':''}>${k==='Backspace'?'←':k}</button>`).join('')}</div><div class="dialog-actions"><button data-cancel>Cancel</button><button id="quantity-confirm">Add</button></div></dialog><dialog class="counter-dialog" id="clear-dialog" aria-labelledby="clear-title" aria-describedby="clear-detail"><h2 id="clear-title">Reset this box?</h2><p id="clear-detail"></p><div class="dialog-actions"><button data-cancel autofocus>Cancel</button><button id="clear-confirm">Reset Box</button></div></dialog>`);
   const quantityDialog=root.querySelector('#quantity-dialog'), clearDialog=root.querySelector('#clear-dialog');
   const input=root.querySelector('#quantity-value'), confirm=root.querySelector('#quantity-confirm');
-  const boxView=mountCounterBox(root.querySelector('.box-scene'),products,i=>{apply(selection.remove(i),[],i);},(a,b)=>{if(editing)apply(selection.move(a,b),[],b);});
+  const boxView=mountCounterBox(root.querySelector('.box-scene'),products,i=>{apply(selection.remove(i),[],i);},(a,b)=>{apply(selection.move(a,b),[],b);});
   function render(added=[]) {
     const catalogEditing=catalogOrder.isActive();
-    catalogEdit.disabled=editing;catalogEdit.setAttribute('aria-label',catalogEditing?'Done editing catalog order':'Edit catalog order');
+    catalogEdit.setAttribute('aria-label',catalogEditing?'Done editing catalog order':'Edit catalog order');
     const state=selection.snapshot(), quantities=new Map(state.items.map(i=>[i.id,i.quantity]));
-    for(const p of available){const c=cards.get(p.id),q=quantities.get(p.id)||0,b=c.querySelector('.quantity-badge');b.hidden=!q;b.textContent=q||'';c.disabled=editing;c.setAttribute('aria-label',catalogEditing?`Reorder ${p.name}; Alt plus arrow keys to swap`:`Add ${p.name}${q?`, ${q} in box`:''}`);}
-    grid.querySelectorAll('.quantity-open').forEach(b=>b.disabled=editing||catalogEditing);
-    grid.classList.toggle('catalog-editing',editing);
-    root.querySelectorAll('[data-capacity-option]').forEach(b=>{b.setAttribute('aria-pressed',Number(b.dataset.capacityOption)===state.capacity);b.disabled=editing;});
+    for(const p of available){const c=cards.get(p.id),q=quantities.get(p.id)||0,b=c.querySelector('.quantity-badge');b.hidden=!q;b.textContent=q||'';c.setAttribute('aria-label',catalogEditing?`Reorder ${p.name}; Alt plus arrow keys to swap`:`Add ${p.name}${q?`, ${q} in box`:''}`);}
+    grid.querySelectorAll('.quantity-open').forEach(b=>b.disabled=catalogEditing);
+    root.querySelectorAll('[data-capacity-option]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.capacityOption)===state.capacity));
     root.querySelector('#foundation-count').textContent=`${state.count} / ${state.capacity}`;
     complete.hidden=state.count!==state.capacity;
     summary.innerHTML=state.count?`<ul>${state.items.map(i=>`<li><img class="summary-thumb" src="${esc(byId.get(i.id).image)}" alt=""><span class="summary-name">${esc(i.name)}</span><span>×${i.quantity}</span></li>`).join('')}</ul>`:'<p>No chocolates selected.</p>';
-    undo.disabled=!state.canUndo;empty.disabled=!state.count;edit.disabled=catalogEditing||(!state.count&&!editing);edit.textContent=editing?'Done':'Edit';edit.setAttribute('aria-pressed',editing);
+    undo.disabled=!state.canUndo;reset.disabled=!state.count;
     save.disabled=saving||state.count!==state.capacity;
-    status.textContent=editing?'Editing box: tap to remove; drag to move or swap.':state.count===state.capacity?'Box full.':'Select chocolates to fill your box.';
-    boxView.render(state,editing,added);
+    status.textContent=state.count===state.capacity?'Box full.':'Select chocolates to fill your box.';
+    boxView.render(state,added);
   }
   function apply(result,added=[],focusSlot=null){if(result.ok){render(result.added||added);if(focusSlot!==null)root.querySelector(`[data-slot="${focusSlot}"]`)?.focus({preventScroll:true});}else if(result.message)status.textContent=result.message;}
   grid.addEventListener('click',e=>{
-    if(editing||catalogOrder.isActive())return;
+    if(catalogOrder.isActive())return;
     const qty=e.target.closest('[data-quantity-id]');
     if(qty){quantityProduct=qty.dataset.quantityId;quantityText='';root.querySelector('#quantity-title').textContent=byId.get(quantityProduct).name;updateQuantity();quantityDialog.showModal();input.focus();return;}
     const card=e.target.closest('.chocolate-card');if(!card)return;
@@ -57,8 +56,7 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   confirm.onclick=()=>{if(confirm.disabled)return;const result=selection.add(quantityProduct,Number(quantityText));if(result.ok)quantityDialog.close();apply(result);};
   root.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
   undo.onclick=()=>apply(selection.undo());
-  edit.onclick=()=>{editing=!editing;render();};
-  empty.onclick=()=>{root.querySelector('#clear-title').textContent=`Clear all ${selection.snapshot().count} chocolates?`;clearDialog.showModal();};
+  reset.onclick=()=>{const n=selection.snapshot().count;if(!n)return;root.querySelector('#clear-detail').textContent=`This will remove all ${n} chocolate${n===1?'':'s'}.`;clearDialog.showModal();};
   root.querySelector('#clear-confirm').onclick=()=>{clearDialog.close();apply(selection.clear());};
   save.onclick=()=>{
     const state=selection.snapshot();if(saving||state.count!==state.capacity)return;
@@ -66,12 +64,12 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
     let saved;
     try {saved=saveCounterTransaction(state,{location:transactionLocation});}
     catch(error){saving=false;save.disabled=false;status.textContent="Couldn't save box. Try again.";status.title=error.message;return;}
-    selection.resetTransaction();editing=false;saving=false;status.removeAttribute('title');render();
+    selection.resetTransaction();saving=false;status.removeAttribute('title');render();
     onSaved(saved.records);
     notice.innerHTML='<strong>&#10003; Box Saved</strong><span>'+esc(saved.record.id)+'</span><span>'+saved.record.totalPieces+' pieces &middot; '+(saved.record.captureDurationMs/1000).toFixed(1)+' sec</span>';
     notice.hidden=false;clearTimeout(savedNoticeTimer);savedNoticeTimer=setTimeout(()=>notice.hidden=true,2600);
   };
-  root.querySelectorAll('[data-capacity-option]').forEach(b=>b.onclick=()=>{if(!editing)apply(selection.setCapacity(Number(b.dataset.capacityOption)));});
+  root.querySelectorAll('[data-capacity-option]').forEach(b=>b.onclick=()=>apply(selection.setCapacity(Number(b.dataset.capacityOption))));
   render();
   return {getSelection:selection.snapshot};
 }

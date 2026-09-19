@@ -11,7 +11,6 @@ module.exports=async({evaluate,send,delay,profile})=>{
   await click('[data-product-id=amaretto]');const initialBox=await box(),initial=await order();
   const productData=await evaluate('JSON.stringify(COUNTER_PRODUCTS)');
   await click('#catalog-edit');assert.equal(await evaluate('document.querySelector("#catalog-edit").textContent'),'Done');
-  assert(await evaluate('document.querySelector("[data-action=edit]").disabled'));
   await click('[data-product-id=raspberry]');await click('[data-quantity-id=raspberry]');assert.deepEqual(await box(),initialBox);assert(await evaluate('!document.querySelector("#quantity-dialog").open'));
   await drag(false);let expected=[...initial];[expected[0],expected[1]]=[expected[1],expected[0]];assert.deepEqual(await order(),expected);assert.deepEqual(await box(),initialBox);
   assert.equal(await evaluate('JSON.stringify(COUNTER_PRODUCTS)'),productData);
@@ -24,7 +23,6 @@ module.exports=async({evaluate,send,delay,profile})=>{
   await click('[data-product-id="'+expected[0]+'"]');assert.equal((await box()).slots[0],expected[0]);
   assert(await evaluate(`document.querySelector('.box-piece img').getAttribute('src')===COUNTER_PRODUCTS.find(p=>p.id==='${expected[0]}').topViewImage`));
   await click('[data-quantity-id="'+expected[0]+'"]');assert(await evaluate('document.querySelector("#quantity-dialog").open'));await click('#quantity-dialog [data-cancel]');
-  await click('[data-action=edit]');assert(await evaluate('document.querySelector("#catalog-edit").disabled'));await click('#catalog-edit');assert.equal(await evaluate('document.querySelector("#catalog-edit").textContent'),'Edit');await click('[data-action=edit]');
   await reload();assert.deepEqual(await order(),expected);
   assert(await evaluate(`(()=>{const a=document.querySelector('#catalog-title').getBoundingClientRect(),b=document.querySelector('.catalog-tools').getBoundingClientRect();return a.right<b.left&&b.right<=innerWidth&&document.documentElement.scrollWidth<=innerWidth})()`));
  }

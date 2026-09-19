@@ -60,9 +60,11 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
         const catalog=document.querySelector('.catalog'), box=document.querySelector('.builder');
         const c=catalog.getBoundingClientRect(), b=box.getBoundingClientRect();
         const controls=[...box.querySelectorAll('.builder-controls button, .box-size-options button')].map(e=>e.getBoundingClientRect());
+        const boxControls=[...box.querySelectorAll('.box-undo, .box-reset')].map(e=>e.getBoundingClientRect());
         return {ratio:c.width/(c.width+b.width),left:c.left,right:b.right,sideBySide:c.right<b.left,
-          bottom:b.bottom,controlsVisible:controls.every(r=>r.bottom<=innerHeight && r.top>=0),
+          bottom:b.bottom,controlsVisible:[...controls,...boxControls].every(r=>r.bottom<=innerHeight && r.top>=0),
           minTouch:Math.min(...controls.map(r=>Math.min(r.width,r.height))),
+          minBoxControlTouch:Math.min(...boxControls.map(r=>Math.min(r.width,r.height))),
           nameSize:parseFloat(getComputedStyle(document.querySelector('.chocolate-name')).fontSize),
           scrollable:catalog.scrollHeight>catalog.clientHeight};
       })()`);
@@ -70,6 +72,10 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
       assert(layout.left<=24 && width-layout.right<=24,'Use available viewport width');
       assert(layout.bottom<=height && layout.controlsVisible,'Box and all controls fit onscreen');
       assert(layout.minTouch>=44 && layout.nameSize>=14,'Comfortable controls and names');
+      // Undo/Reset are intentionally compact overlay controls, not full 44px targets;
+      // in this cramped landscape-tablet band they shrink further (still >=22px) so they
+      // keep an 8px+ gap from the gold frame without ever reaching the last row of chocolates.
+      assert(layout.minBoxControlTouch>=22,'Undo/Reset stay tappable even when compact');
       assert(layout.scrollable,'Catalog scrolls independently');
       assert(state.columns>=4);
       const fixed=await evaluate(`(() => {

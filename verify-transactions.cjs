@@ -10,7 +10,7 @@ module.exports=async({evaluate,send,delay,profile})=>{
  const initial=(await records()).length;
  for(const size of [6,10,16,30,50]){
   await click('[data-capacity-option="'+size+'"]');const firstAt=Date.now();await qty('amaretto',size-1);await qty('raspberry',1);
-  if(size===6){await click('[data-slot="0"]');assert((await state()).save);await click('[data-action=undo]');await click('[data-action=edit]');await evaluate(`(()=>{const b=document.querySelector('[data-slot="4"]');b.focus();b.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true}));})()`);await click('[data-action=edit]');}
+  if(size===6){await click('[data-slot="0"]');assert((await state()).save);await click('[data-action=undo]');await evaluate(`(()=>{const b=document.querySelector('[data-slot="4"]');b.focus();b.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',altKey:true,bubbles:true}));})()`);}
   const before=await state(),n=(await records()).length;if(size===6)assert.equal(before.slots[4],'raspberry','Rearrangement before saving must move the distinct piece');
   await evaluate(`document.querySelector('.save-box').click();document.querySelector('.save-box').click()`);
   assert.equal(await evaluate(`localStorage.getItem('cd-catalog-order-v1')`),catalogOrder);
