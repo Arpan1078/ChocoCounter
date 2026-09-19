@@ -29,7 +29,7 @@ function createCounterSelection(products) {
       return {ok:true,added};
     },
     setCapacity(next) {
-      if (![6,10].includes(next)) return {ok:false,message:'Choose 6 Piece or 10 Piece.'};
+      if (![6,10,16,30,50].includes(next)) return {ok:false,message:'Choose a supported box size.'};
       if (count()>next) return {ok:false,message:`${count()} pieces selected. They won’t fit in a ${next}-piece box.`};
       if(next===capacity) return {ok:true};
       remember();

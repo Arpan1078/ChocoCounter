@@ -15,7 +15,7 @@ function mountCounterFoundation({ products, escapeHTML: esc }) {
   root.insertAdjacentHTML('beforeend',`<dialog class="counter-dialog" id="quantity-dialog" aria-labelledby="quantity-title"><h2 id="quantity-title"></h2><label for="quantity-value">Quantity</label><input id="quantity-value" type="text" inputmode="none" pattern="[0-9]*" autocomplete="off" aria-describedby="quantity-remaining"><p id="quantity-remaining" role="status"></p><div class="quantity-keys">${['1','2','3','4','5','6','7','8','9','Backspace','0'].map(k=>`<button type="button" data-key="${k}" ${k==='Backspace'?'aria-label="Backspace"':''}>${k==='Backspace'?'←':k}</button>`).join('')}</div><div class="dialog-actions"><button data-cancel>Cancel</button><button id="quantity-confirm">Add</button></div></dialog><dialog class="counter-dialog" id="clear-dialog" aria-labelledby="clear-title"><h2 id="clear-title"></h2><div class="dialog-actions"><button data-cancel autofocus>Cancel</button><button id="clear-confirm">Clear Box</button></div></dialog>`);
   const quantityDialog=root.querySelector('#quantity-dialog'), clearDialog=root.querySelector('#clear-dialog');
   const input=root.querySelector('#quantity-value'), confirm=root.querySelector('#quantity-confirm');
-  const boxView=mountCounterBox(root.querySelector('.box-scene'),products,i=>{if(editing)apply(selection.remove(i),[],i);},(a,b)=>{if(editing)apply(selection.move(a,b),[],b);});
+  const boxView=mountCounterBox(root.querySelector('.box-scene'),products,i=>{apply(selection.remove(i),[],i);},(a,b)=>{if(editing)apply(selection.move(a,b),[],b);});
   function render(added=[]) {
     const state=selection.snapshot(), quantities=new Map(state.items.map(i=>[i.id,i.quantity]));
     for(const p of available){const c=cards.get(p.id),q=quantities.get(p.id)||0,b=c.querySelector('.quantity-badge');b.hidden=!q;b.textContent=q||'';c.disabled=editing;c.setAttribute('aria-label',`Add ${p.name}${q?`, ${q} in box`:''}`);}
@@ -26,8 +26,8 @@ function mountCounterFoundation({ products, escapeHTML: esc }) {
     complete.hidden=state.count!==state.capacity;
     summary.innerHTML=state.count?`<ul>${state.items.map(i=>`<li><img class="summary-thumb" src="${esc(byId.get(i.id).image)}" alt=""><span class="summary-name">${esc(i.name)}</span><span>×${i.quantity}</span></li>`).join('')}</ul>`:'<p>No chocolates selected.</p>';
     undo.disabled=!state.canUndo;empty.disabled=!state.count;edit.disabled=!state.count&&!editing;edit.textContent=editing?'Done':'Edit';edit.setAttribute('aria-pressed',editing);
-    save.disabled=state.count!==state.capacity||editing;
-    status.textContent=editing?'Editing: tap to remove; drag to move or swap.':state.count===state.capacity?'Box full.':'Select chocolates to fill your box.';
+    save.disabled=state.count!==state.capacity;
+    status.textContent=editing?'Editing box: tap to remove; drag to move or swap.':state.count===state.capacity?'Box full.':'Select chocolates to fill your box.';
     boxView.render(state,editing,added);
   }
   function apply(result,added=[],focusSlot=null){if(result.ok){render(result.added||added);if(focusSlot!==null)root.querySelector(`[data-slot="${focusSlot}"]`)?.focus({preventScroll:true});}else if(result.message)status.textContent=result.message;}

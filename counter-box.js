@@ -21,6 +21,12 @@ const COUNTER_BOX_LAYOUTS = {
   ] }
 };
 
+// Temporary trays can later be replaced by measured image layouts.
+for(const [capacity,columns] of [[16,4],[30,6],[50,10]]) {
+ const rows=capacity/columns;
+ COUNTER_BOX_LAYOUTS[capacity]={temporary:true,columns,rows,topScale:76/columns,fallbackScale:98/columns,
+ slots:Array.from({length:capacity},(_,i)=>({x:(i%columns+.5)*100/columns,y:(Math.floor(i/columns)+.5)*100/rows}))};
+}
 function mountCounterBox(scene, products, onRemove, onMove) {
   const byId=new Map(products.map(p=>[p.id,p]));
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -50,8 +56,12 @@ function mountCounterBox(scene, products, onRemove, onMove) {
       const scale=hasTopView?layout.topScale:layout.fallbackScale;
       const aspect=hasTopView?'1/1':'600/540';
       const style='left:'+pos.x+'%;top:'+pos.y+'%;--piece-scale:'+scale+'%;--piece-aspect:'+aspect+';z-index:'+(i+1);
-      return `<button type="button" class="box-piece ${id?'occupied':''} ${added.includes(i)?'arriving':''}" data-slot="${i}" data-piece-id="${esc(id||'')}" style="${style}" ${edit?'':'disabled'} aria-label="Slot ${i+1}${p?`: ${esc(p.name)}${edit?', tap to remove or drag to move':''}`:': empty'}">${p?`<img src="${esc(boxImage)}" alt="" draggable="false">`:`<span class="slot-number">${i+1}</span>`}</button>`;
+      return `<button type="button" class="box-piece ${id?'occupied':''} ${added.includes(i)?'arriving':''}" data-slot="${i}" data-piece-id="${esc(id||'')}" style="${style}" ${id||edit?'':'disabled'} aria-label="Slot ${i+1}${p?`: ${esc(p.name)}${edit?', tap to remove or drag to move':', tap to remove'}`:': empty'}">${p?`<img src="${esc(boxImage)}" alt="" draggable="false">`:`<span class="slot-number">${i+1}</span>`}</button>`;
     }).join('');
+    if(layout.temporary){
+      scene.innerHTML=`<div class="temporary-tray" style="--tray-columns:${layout.columns};--tray-rows:${layout.rows}"><div class="tray-cavities" aria-hidden="true">${state.slots.map(()=>'<span></span>').join('')}</div><div class="box-overlay">${buttons}</div></div>`;
+      return;
+    }
     scene.innerHTML=`<div class="box-frame"><img class="box-render" src="${layout.image}" alt="${state.capacity}-piece Cocoa Dolce box, top-down view" width="1536" height="1024"><div class="box-overlay">${buttons}</div></div>`;
   }
   // Nearest valid slot within a generous radius, but never a drop outside the scene.
@@ -63,14 +73,14 @@ function mountCounterBox(scene, products, onRemove, onMove) {
   }
   scene.addEventListener('pointerdown',e=>{
     const button=destination(e.clientX,e.clientY,true);
-    if(!editing||!button||gesture||!e.isPrimary||e.button!==0)return;
+    if(!button||gesture||!e.isPrimary||e.button!==0)return;
     gesture={id:e.pointerId,button,from:Number(button.dataset.slot),x:e.clientX,y:e.clientY,drag:false};
     button.setPointerCapture(e.pointerId);
   });
   scene.addEventListener('pointermove',e=>{
     if(!gesture||gesture.id!==e.pointerId)return;
     if(Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>8)gesture.drag=true;
-    if(!gesture.drag)return;
+    if(!gesture.drag||!editing)return;
     if(!gesture.ghost){
       const image=gesture.button.querySelector('img'),r=image.getBoundingClientRect();
       gesture.ghost=image.cloneNode();
@@ -89,13 +99,13 @@ function mountCounterBox(scene, products, onRemove, onMove) {
     if(!gesture||gesture.id!==e.pointerId)return;
     const {from,drag}=gesture, target=destination(e.clientX,e.clientY);
     cancelGesture();
-    if(drag){if(target)onMove(from,Number(target.dataset.slot));}
+    if(drag){if(editing&&target)onMove(from,Number(target.dataset.slot));}
     else onRemove(from);
   });
   scene.addEventListener('pointercancel',cancelGesture);
   scene.addEventListener('lostpointercapture',()=>{if(gesture)cancelGesture();});
   // Pointer removal occurs on pointerup only; generated clicks must never remove twice.
-  scene.addEventListener('click',e=>{if(editing && e.detail===0 && e.target.closest('.occupied'))onRemove(Number(e.target.closest('[data-slot]').dataset.slot));});
+  scene.addEventListener('click',e=>{if(e.detail===0 && e.target.closest('.occupied'))onRemove(Number(e.target.closest('[data-slot]').dataset.slot));});
   scene.addEventListener('keydown',e=>{
     const b=e.target.closest('.occupied');if(!editing||!b||!e.altKey)return;
     const delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-keyboardColumns,ArrowDown:keyboardColumns}[e.key];

@@ -200,11 +200,11 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
       <aside class="builder" aria-labelledby="builder-title">
         <div class="builder-heading"><h2 id="builder-title">Your Box</h2></div>
         <span class="box-size-label" id="size-label">BOX SIZE</span>
-        <div class="box-size-options" role="group" aria-labelledby="size-label"><button type="button" data-capacity-option="6" aria-pressed="true">6 Piece</button><button type="button" data-capacity-option="10" aria-pressed="false">10 Piece</button></div>
+        <div class="box-size-options" role="group" aria-labelledby="size-label"><button type="button" data-capacity-option="6" aria-label="6 pieces" aria-pressed="true">6</button><button type="button" data-capacity-option="10" aria-label="10 pieces" aria-pressed="false">10</button><button type="button" data-capacity-option="16" aria-label="16 pieces" aria-pressed="false">16</button><button type="button" data-capacity-option="30" aria-label="30 pieces" aria-pressed="false">30</button><button type="button" data-capacity-option="50" aria-label="50 pieces" aria-pressed="false">50</button></div>
         <div class="box-scene"><img src="assets/box/top-view-6.png" alt="Empty six-piece box, top-down view" width="1536" height="1024"></div>
         <div class="piece-progress"><span class="piece-count"><strong id="foundation-count" aria-live="polite">0 / 6</strong><span>pieces in your box</span></span><span class="box-complete-badge" id="box-complete" hidden aria-live="polite">&#10003; Box Complete!</span></div>
         <div class="box-summary"><p>No chocolates selected.</p></div>
-        <div class="builder-controls"><button disabled>Undo</button><button disabled>Edit</button><button disabled>Empty Box</button><button class="save-box" disabled>Save Box</button></div>
+        <div class="builder-controls"><button disabled>Undo</button><button disabled>Edit</button><button disabled>Empty Box</button><button class="save-box" disabled>Save Box</button><button type="button" class="capture-box" data-action="capture">Capture</button></div>
         <p class="builder-footnote">Select chocolates to fill your box.</p>
       </aside>
     </div>

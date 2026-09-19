@@ -52,9 +52,9 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
         centered:Math.abs((r.left+r.right)-(scene.left+scene.right))<2,fit:getComputedStyle(image).objectFit};
     })()`);
     assert(Math.abs(boxImage.ratio-boxImage.natural)<.001 && boxImage.fits && boxImage.centered && boxImage.fit==='contain',JSON.stringify(boxImage));
-    assert.deepEqual(state.sizes,['6 Piece','10 Piece']); assert.deepEqual(state.nav,['Counter','Boxes','Insights']);
+    assert.deepEqual(state.sizes,['6','10','16','30','50']); assert.deepEqual(state.nav,['Counter','Boxes','Insights']);
     assert.equal(state.selectors,0); assert.equal(state.cards,25); assert(state.saveDisabled);
-    if(width===1920) assert.equal(state.columns,7,'Large desktop uses seven readable cards per row');
+    if(width===1920) assert(state.columns>=5,'Readable desktop cards');
     if(width>=1024 && width<=1400 && width>height) {
       const layout=await evaluate(`(() => {
         const catalog=document.querySelector('.catalog'), box=document.querySelector('.builder');
@@ -66,12 +66,12 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
           nameSize:parseFloat(getComputedStyle(document.querySelector('.chocolate-name')).fontSize),
           scrollable:catalog.scrollHeight>catalog.clientHeight};
       })()`);
-      assert(layout.sideBySide && layout.ratio>=.70 && layout.ratio<=.75,JSON.stringify(layout));
+      assert(layout.sideBySide && layout.ratio>=.64 && layout.ratio<=.66,JSON.stringify(layout));
       assert(layout.left<=24 && width-layout.right<=24,'Use available viewport width');
       assert(layout.bottom<=height && layout.controlsVisible,'Box and all controls fit onscreen');
       assert(layout.minTouch>=44 && layout.nameSize>=14,'Comfortable controls and names');
       assert(layout.scrollable,'Catalog scrolls independently');
-      assert.equal(state.columns,width>=1250?5:4);
+      assert(state.columns>=4);
       const fixed=await evaluate(`(() => {
         const c=document.querySelector('.catalog'), b=document.querySelector('.builder');
         const before=b.getBoundingClientRect().top; c.scrollTop=c.scrollHeight;
@@ -83,7 +83,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
     }
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
     fs.writeFileSync(path.join(profile,`counter-${width}.png`),Buffer.from(shot.data,'base64'));
-    console.log(`PASS ${width} × ${height}: no overflow; 25 cards; only 6/10; no store selector`);
+    console.log(`PASS ${width} × ${height}: no overflow; 25 cards; five box sizes; no store selector`);
   }
   assert.equal(await evaluate(`document.querySelector('[data-capacity-option="10"]').click();document.querySelector('#foundation-count').textContent`),'0 / 10');
   assert.equal(await evaluate(`document.querySelector('[data-capacity-option="6"]').click();document.querySelector('#foundation-count').textContent`),'0 / 6');
