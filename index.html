@@ -801,7 +801,7 @@ document.addEventListener("keydown", e => {
   if (e.key==="Enter" && !$("#save").disabled && !e.target.closest("button")){ e.preventDefault(); saveBox(); }
 });
 
-const checkout=mountCounterCheckout({escapeHTML:esc,getRecords:()=>boxes});
+const checkout=mountCounterCheckout({escapeHTML:esc,getRecords:()=>boxes,onCompleted:()=>foundation.resetCustomer()});
 const catalogProducts=CounterCatalogState.products();
 const foundation=mountCounterFoundation({ products:catalogProducts, escapeHTML: esc, transactionLocation:loc.value, onSaved:records=>{boxes=records;} });
 CounterCatalogState.subscribe(products=>foundation.refreshProducts(products));

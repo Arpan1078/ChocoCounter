@@ -7,8 +7,13 @@ module.exports=async({evaluate,send,delay,profile})=>{
     assert.equal(await evaluate(`document.querySelector('#checkout-total').textContent`),total);
     assert.deepEqual(await evaluate(`[...document.querySelectorAll('.checkout-box-price')].map(e=>e.textContent)`),sizes.map(n=>n===6?'$25':n===10?'$40':'Price unavailable'));
     assert.equal(await evaluate(`document.querySelectorAll('#checkout-prices li').length`),sizes.length);
-    const before=await evaluate(`JSON.stringify({storage:{...localStorage},url:location.href,html:document.querySelector('#v-checkout').innerHTML})`);
-    await click('#checkout-pay');assert.equal(await evaluate(`JSON.stringify({storage:{...localStorage},url:location.href,html:document.querySelector('#v-checkout').innerHTML})`),before);
+    // Pay now opens the Payment Successful flow (verify-payment.cjs covers it in full);
+    // here we only confirm opening it is non-destructive until Continue is clicked.
+    const before=await evaluate(`JSON.stringify({storage:{...localStorage},url:location.href,boxes:document.querySelector('#checkout-boxes').innerHTML})`);
+    await click('#checkout-pay');
+    assert.equal(await evaluate(`document.querySelector('#payment-success-dialog').open`),true,'Pay opens the payment modal');
+    assert.equal(await evaluate(`JSON.stringify({storage:{...localStorage},url:location.href,boxes:document.querySelector('#checkout-boxes').innerHTML})`),before);
+    await send('Page.reload');await delay(2200);await click('[data-view="checkout"]');
     if(sizes.join(',')==='6,6,10'){
       const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});fs.writeFileSync(path.join(profile,'checkout-prices.png'),Buffer.from(shot.data,'base64'));
     }
@@ -20,5 +25,5 @@ module.exports=async({evaluate,send,delay,profile})=>{
       assert.equal(await evaluate(`document.querySelector('#checkout-total').textContent`),'$40');
     }
   }
-  console.log('PASS Checkout pricing: 25/40/50/65/90 totals, per-box prices, unsupported 16/30/50 safety, remove recalculates without history deletion, refresh, Pay no-op.');
+  console.log('PASS Checkout pricing: 25/40/50/65/90 totals, per-box prices, unsupported 16/30/50 safety, remove recalculates without history deletion, refresh, Pay opens payment modal non-destructively.');
 };

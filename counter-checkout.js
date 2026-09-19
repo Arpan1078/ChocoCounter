@@ -15,11 +15,40 @@ function addCounterOrderBox(id,storage=localStorage){
   if(!order.boxIds.includes(id))order.boxIds.push(id);
   storage.setItem(COUNTER_ORDER_STORAGE_KEY,JSON.stringify(order));
 }
-function mountCounterCheckout({escapeHTML:esc,getRecords}){
+function mountCounterCheckout({escapeHTML:esc,getRecords,onCompleted}){
   const root=document.querySelector('#v-checkout'),list=root.querySelector('#checkout-boxes');
   const empty=root.querySelector('#checkout-empty'),pay=root.querySelector('#checkout-pay');
   const error=root.querySelector('#checkout-error'),dialog=root.querySelector('#checkout-remove-dialog');
   let removing=null,trigger=null;
+  root.insertAdjacentHTML('beforeend',`<dialog class="counter-dialog" id="payment-success-dialog" aria-labelledby="payment-success-title" aria-describedby="payment-success-detail"><h2 id="payment-success-title">Payment Successful!</h2><p id="payment-success-detail">Order completed successfully.</p><p role="alert" hidden></p><div class="dialog-actions"><button type="button" id="payment-continue" autofocus>Continue</button></div></dialog>`);
+  const paymentDialog=root.querySelector('#payment-success-dialog');
+  let awaitingContinue=false;
+  paymentDialog.addEventListener('cancel',event=>event.preventDefault());
+  // Chromium closes <dialog> on Escape regardless of the cancel preventDefault above,
+  // and still forces it shut even if showModal() is called back synchronously from
+  // this handler, so the reopen has to wait for the browser's own close to finish.
+  paymentDialog.addEventListener('close',()=>{if(awaitingContinue)setTimeout(()=>{if(awaitingContinue&&!paymentDialog.open)paymentDialog.showModal();},0);});
+  pay.onclick=()=>{
+    if(paymentDialog.open)return;
+    try{
+      const ids=new Set(getRecords().map(record=>record.id));
+      if(!readCounterOrder().boxIds.some(id=>ids.has(id)))return;
+    }catch{render();return;}
+    paymentDialog.querySelector('[role="alert"]').hidden=true;
+    awaitingContinue=true;
+    paymentDialog.showModal();
+  };
+  root.querySelector('#payment-continue').onclick=()=>{
+    if(!paymentDialog.open)return;
+    // Persist first: a failed write must leave the order and active box intact.
+    try{localStorage.setItem(COUNTER_ORDER_STORAGE_KEY,JSON.stringify({boxIds:[]}));}
+    catch{const message=paymentDialog.querySelector('[role="alert"]');message.textContent="Couldn't finish this order. Click Continue to try again.";message.hidden=false;return;}
+    awaitingContinue=false;
+    onCompleted();
+    render();paymentDialog.close();
+    document.querySelector('[data-view="counter"]').click();
+    document.querySelector('#v-counter [data-capacity-option][aria-pressed="true"]').focus();
+  };
   function render(){
     let order;
     try{order=readCounterOrder();error.hidden=true;}

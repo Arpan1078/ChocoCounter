@@ -35,5 +35,7 @@ main:has(> #v-checkout:not([hidden])){max-width:none;padding-inline:clamp(20px,1
 .save-success-dialog{width:min(440px,calc(100% - 28px))}
 .save-success-dialog .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
 .save-success-dialog button{border-radius:0;padding:10px!important}
+#payment-success-dialog{text-align:center}
+#payment-success-dialog .dialog-actions{display:flex;justify-content:center}
 @media(max-width:1199px){.checkout-layout{gap:20px}.checkout-actions{padding:24px}.checkout-contents{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:24px 16px}}
 @media(max-width:760px){nav{gap:16px;flex-wrap:wrap}.checkout-heading{align-items:flex-start;flex-direction:column}.checkout-layout{grid-template-columns:minmax(0,1fr)}.checkout-actions{position:static;grid-row:1}.checkout-card{padding:20px}.checkout-contents{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:24px 12px}}

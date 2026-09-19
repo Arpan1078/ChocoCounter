@@ -115,7 +115,10 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   };
   root.querySelectorAll('[data-capacity-option]').forEach(b=>b.onclick=()=>apply(selection.setCapacity(Number(b.dataset.capacityOption))));
   render();
-  return {getSelection:selection.snapshot,refreshProducts(nextProducts){
+  return {getSelection:selection.snapshot,resetCustomer(){
+    selection.resetTransaction();pendingSaved=null;saving=false;lockSavedBox(false);
+    status.removeAttribute('title');render();
+  },refreshProducts(nextProducts){
     currentProducts=nextProducts;available=currentProducts.filter(p=>p.active);byId=new Map(currentProducts.map(p=>[p.id,p]));selection.setProducts(currentProducts);boxView.setProducts(currentProducts);buildCatalog();applyFilter();render();
   }};
 }

@@ -31,10 +31,14 @@ module.exports=async({evaluate,send,delay,profile})=>{
     await check(`document.documentElement.scrollWidth<=innerWidth&&document.querySelector('#checkout-pay').getBoundingClientRect().bottom<innerHeight`,'Responsive page and Pay');
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});fs.writeFileSync(path.join(profile,`checkout-${width}.png`),Buffer.from(shot.data,'base64'));
   }
-  const before=await evaluate(`JSON.stringify({url:location.href,storage:{...localStorage},html:document.querySelector('#v-checkout').innerHTML})`);
-  await click('#checkout-pay');assert.equal(await evaluate(`JSON.stringify({url:location.href,storage:{...localStorage},html:document.querySelector('#v-checkout').innerHTML})`),before,'Pay has no effect');
+  // Pay now opens the Payment Successful flow (verify-payment.cjs covers it in full);
+  // here we only confirm opening it is non-destructive until Continue is clicked.
+  const before=await evaluate(`JSON.stringify({storage:{...localStorage},boxes:document.querySelector('#checkout-boxes').innerHTML})`);
+  await click('#checkout-pay');
+  await check(`document.querySelector('#payment-success-dialog').open`,'Pay opens the payment modal');
+  assert.equal(await evaluate(`JSON.stringify({storage:{...localStorage},boxes:document.querySelector('#checkout-boxes').innerHTML})`),before,'Opening Pay leaves the order and history untouched until Continue is clicked');
+  await reload();await click('[data-view="checkout"]');await check(`document.querySelectorAll('.checkout-card').length===3`,'Refresh preserves order after opening Pay without completing');
   for(const view of ['boxes','insights','manage','counter','checkout'])await click(`[data-view="${view}"]`);
-  await reload();await click('[data-view="checkout"]');await check(`document.querySelectorAll('.checkout-card').length===3`,'Refresh preserves order');
   await click('[data-remove-box]');await check(`document.querySelector('#checkout-remove-dialog').open&&document.activeElement.hasAttribute('data-remove-cancel')`,'Remove confirmation focus');
   await click('[data-remove-cancel]');await check(`document.querySelectorAll('.checkout-card').length===3`,'Cancel preserves order');
   await click('[data-remove-box]');await click('[data-remove-confirm]');
@@ -75,5 +79,5 @@ module.exports=async({evaluate,send,delay,profile})=>{
   await check(`!document.querySelector('#checkout-empty').hidden&&document.querySelector('#checkout-pay').hidden&&JSON.parse(localStorage.getItem('cd-boxes-v1')).length===5`,'Last removal returns to empty without deleting history');
   await evaluate(`localStorage.setItem('cd-current-order-v1','malformed')`);await click('[data-view="checkout"]');
   await check(`!document.querySelector('#checkout-error').hidden&&localStorage.getItem('cd-current-order-v1')==='malformed'`,'Unreadable order is preserved and reported');
-  console.log('PASS Checkout: three-box flow, size retention, modal focus/Escape, saved timing/quantities/front images, local/inactive/fallback products, four viewports, persistence, remove/cancel/history/exports/Insights, Manage, Pay no-op, transaction and grouping failures/retry, alternate entry point.');
+  console.log('PASS Checkout: three-box flow, size retention, modal focus/Escape, saved timing/quantities/front images, local/inactive/fallback products, four viewports, persistence, remove/cancel/history/exports/Insights, Manage, Pay opens payment modal non-destructively, transaction and grouping failures/retry, alternate entry point.');
 };
