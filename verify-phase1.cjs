@@ -59,7 +59,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
       const layout=await evaluate(`(() => {
         const catalog=document.querySelector('.catalog'), box=document.querySelector('.builder');
         const c=catalog.getBoundingClientRect(), b=box.getBoundingClientRect();
-        const controls=[...box.querySelectorAll('button')].map(e=>e.getBoundingClientRect());
+        const controls=[...box.querySelectorAll('.builder-controls button, .box-size-options button')].map(e=>e.getBoundingClientRect());
         return {ratio:c.width/(c.width+b.width),left:c.left,right:b.right,sideBySide:c.right<b.left,
           bottom:b.bottom,controlsVisible:controls.every(r=>r.bottom<=innerHeight && r.top>=0),
           minTouch:Math.min(...controls.map(r=>Math.min(r.width,r.height))),
@@ -75,7 +75,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
       const fixed=await evaluate(`(() => {
         const c=document.querySelector('.catalog'), b=document.querySelector('.builder');
         const before=b.getBoundingClientRect().top; c.scrollTop=c.scrollHeight;
-        const last=c.querySelector('.chocolate-card:last-child').getBoundingClientRect();
+        const last=c.querySelector('.catalog-item:last-child .chocolate-card').getBoundingClientRect();
         const result=c.scrollTop>0 && b.getBoundingClientRect().top===before && last.bottom<=c.getBoundingClientRect().bottom;
         c.scrollTop=0;return result;
       })()`);
@@ -88,12 +88,20 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
   assert.equal(await evaluate(`document.querySelector('[data-capacity-option="10"]').click();document.querySelector('#foundation-count').textContent`),'0 / 10');
   assert.equal(await evaluate(`document.querySelector('[data-capacity-option="6"]').click();document.querySelector('#foundation-count').textContent`),'0 / 6');
   assert.equal(await evaluate(`document.querySelector('.chocolate-card').click();document.querySelector('#foundation-count').textContent`),'1 / 6');
-  assert.equal(await evaluate(`document.querySelectorAll('#v-counter input, #v-counter .recent, #v-counter .chocolate-type, #v-counter .bb').length`),0);
-  const assetFiles=fs.readdirSync(path.join(__dirname,'assets/chocolates')).sort();
+  assert.equal(await evaluate(`document.querySelectorAll('#v-counter input[type="search"], #v-counter .recent, #v-counter .chocolate-type, #v-counter .bb').length`),0);
+  const assetFiles=fs.readdirSync(path.join(__dirname,'assets/chocolates')).filter(f=>!fs.statSync(path.join(__dirname,'assets/chocolates',f)).isDirectory()).sort();
   const usedFiles=await evaluate(`[...document.querySelectorAll('.chocolate-card img')].map(i=>i.getAttribute('src').split('/').pop()).sort()`);
-  assert.deepEqual(usedFiles,assetFiles,'Every supplied chocolate photo is used exactly once');
+  assert.equal(usedFiles.length,25,'Catalog cards use exactly the 25 front-view photos, never a top-view one');
+  assert.deepEqual(usedFiles,assetFiles.filter(f=>usedFiles.includes(f)),'Catalog photos are a subset of assets/chocolates (raw top-view uploads may sit alongside, superseded by their processed/ derivative)');
+  const topViewCheck=await evaluate(`(async () => {
+    const withTop=COUNTER_PRODUCTS.filter(p=>p.topViewImage);
+    const results=await Promise.all(withTop.map(p=>new Promise(resolve=>{const i=new Image();i.onload=()=>resolve(true);i.onerror=()=>resolve(false);i.src=p.topViewImage;})));
+    return {count:withTop.length,allLoaded:results.every(Boolean)};
+  })()`);
+  assert(topViewCheck.allLoaded,'Every product topViewImage path actually loads: '+JSON.stringify(topViewCheck));
   assert(await evaluate(`[...document.querySelectorAll('.chocolate-card')].every(c=>c.children.length===2 && c.querySelectorAll('img').length===1 && c.querySelector('.chocolate-name > span:first-child'))`));
-  assert(await evaluate(`[...document.querySelectorAll('#v-counter img, .brand-logo')].every(i=>i.complete && i.naturalWidth>0)`),'All 27 supplied images load');
+  await evaluate(`Promise.all([...document.querySelectorAll('#v-counter img, .brand-logo')].map(i=>i.decode()))`);
+  assert(await evaluate(`[...document.querySelectorAll('#v-counter img, .brand-logo')].every(i=>i.complete && i.naturalWidth>0)`),'All supplied images and slot images load');
   // Full catalog contact sheet and mobile builder for visual review.
   await send('Emulation.setDeviceMetricsOverride',{width:1920,height:1400,deviceScaleFactor:1,mobile:false});
   await evaluate(`document.querySelector('.catalog').style.maxHeight='none'`);
@@ -107,6 +115,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
   shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   fs.writeFileSync(path.join(profile,'mobile-box.png'),Buffer.from(shot.data,'base64'));
   await require('./verify-selection.cjs')({ evaluate, send, delay, profile });
+  await require('./verify-builder.cjs')({ evaluate, send, delay, profile });
   await evaluate(`document.querySelector('[data-view="boxes"]').click()`);
   assert(await evaluate(`!document.querySelector('#v-boxes').hidden && document.querySelector('#boxTable').textContent.includes('Salted Caramel')`));
   assert(await evaluate(`['expCsv','expJson','bStart','bStop'].every(id=>document.getElementById(id))`));

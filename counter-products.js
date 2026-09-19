@@ -1,9 +1,15 @@
-/* Counter catalog: add an image and one entry here. IDs must be unique and stable. */
+/* Counter catalog: add an image and one entry here. IDs must be unique and stable.
+   `image` (the catalog photo) is required. An optional `topViewImage` field names a
+   true top-down photo of the same chocolate; the top-down box visualization
+   (counter-box.js) uses `topViewImage` when present and falls back to `image`
+   otherwise. The catalog card and the selected-chocolate summary thumbnail
+   always use `image`, never `topViewImage`. */
 const COUNTER_PRODUCTS = [
   {
     "id": "amaretto",
     "name": "Amaretto",
     "image": "assets/chocolates/amaretto-almond-gourmet-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/amaretto.png",
     "backgroundColor": "#A94459",
     "active": true
   },
@@ -11,6 +17,7 @@ const COUNTER_PRODUCTS = [
     "id": "banana-foster",
     "name": "Banana Foster",
     "image": "assets/chocolates/banana-foster-dark-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/banana-foster.png",
     "backgroundColor": "#C7A448",
     "active": true
   },
@@ -18,6 +25,7 @@ const COUNTER_PRODUCTS = [
     "id": "bourbon-barrel-maple-cream",
     "name": "Bourbon Barrel Maple Cream",
     "image": "assets/chocolates/bourbon-barrel-maple-cream-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/bourbon-barrel-maple-cream.png",
     "backgroundColor": "#667989",
     "active": true
   },
@@ -25,6 +33,7 @@ const COUNTER_PRODUCTS = [
     "id": "brownie-batter",
     "name": "Brownie Batter",
     "image": "assets/chocolates/brownie-batter-dark-chocolate-truffle_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/brownie-batter.png",
     "backgroundColor": "#736477",
     "active": true
   },
@@ -32,6 +41,7 @@ const COUNTER_PRODUCTS = [
     "id": "caramel-apple-cider",
     "name": "Caramel Apple Cider",
     "image": "assets/chocolates/caramel-apple-cider-gourmet-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/caramel-apple-cider.png",
     "backgroundColor": "#9DAB83",
     "active": true
   },
@@ -39,6 +49,7 @@ const COUNTER_PRODUCTS = [
     "id": "champagne",
     "name": "Champagne",
     "image": "assets/chocolates/champagne-sparkling-gourmet-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/champagne.png",
     "backgroundColor": "#C09D68",
     "active": true
   },
@@ -53,6 +64,7 @@ const COUNTER_PRODUCTS = [
     "id": "confetti-cake",
     "name": "Confetti Cake",
     "image": "assets/chocolates/confetti-cake-gold-chocolate-truffle_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/confetti-cake.png",
     "backgroundColor": "#CE8E9F",
     "active": true
   },
@@ -60,6 +72,7 @@ const COUNTER_PRODUCTS = [
     "id": "cookies-cream",
     "name": "Cookies & Cream",
     "image": "assets/chocolates/cookies-and-cream-gourmet-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/cookies-cream.png",
     "backgroundColor": "#536D9A",
     "active": true
   },
@@ -67,6 +80,7 @@ const COUNTER_PRODUCTS = [
     "id": "creme-brulee",
     "name": "Crème Brûlée",
     "image": "assets/chocolates/creme-brulee-dessert-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/creme-brulee.png",
     "backgroundColor": "#CB864D",
     "active": true
   },
@@ -74,6 +88,7 @@ const COUNTER_PRODUCTS = [
     "id": "dulce-de-leche",
     "name": "Dulce de Leche",
     "image": "assets/chocolates/DulceDeLeche_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/dulce-de-leche.png",
     "backgroundColor": "#C1A17F",
     "active": true
   },
@@ -81,6 +96,7 @@ const COUNTER_PRODUCTS = [
     "id": "earl-grey-honey",
     "name": "Earl Grey Honey",
     "image": "assets/chocolates/earl-grey-honey-gourmet-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/earl-grey-honey.png",
     "backgroundColor": "#8498B5",
     "active": true
   },
@@ -88,6 +104,7 @@ const COUNTER_PRODUCTS = [
     "id": "espresso-martini",
     "name": "Espresso Martini",
     "image": "assets/chocolates/espresso-martini-coffee-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/espresso-martini.png",
     "backgroundColor": "#4B6770",
     "active": true
   },
@@ -95,6 +112,7 @@ const COUNTER_PRODUCTS = [
     "id": "grey-salt-caramel",
     "name": "French Grey Salt Caramel",
     "image": "assets/chocolates/french-grey-salt-caramel-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/grey-salt-caramel.png",
     "backgroundColor": "#758779",
     "active": true
   },
@@ -102,6 +120,7 @@ const COUNTER_PRODUCTS = [
     "id": "key-lime-pie",
     "name": "Key Lime Pie",
     "image": "assets/chocolates/key-lime-pie-white-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/key-lime-pie.png",
     "backgroundColor": "#A9B979",
     "active": true
   },
@@ -109,6 +128,7 @@ const COUNTER_PRODUCTS = [
     "id": "lemon",
     "name": "Lemon",
     "image": "assets/chocolates/lemon-citrus-white-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/lemon.png",
     "backgroundColor": "#C1A537",
     "active": true
   },
@@ -116,6 +136,7 @@ const COUNTER_PRODUCTS = [
     "id": "manhattan",
     "name": "Manhattan",
     "image": "assets/chocolates/manhattan-whiskey-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/manhattan.png",
     "backgroundColor": "#B86C53",
     "active": true
   },
@@ -123,6 +144,7 @@ const COUNTER_PRODUCTS = [
     "id": "pb-caramel",
     "name": "Peanut Butter Caramel",
     "image": "assets/chocolates/PeanutButterCaramel_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/pb-caramel.png",
     "backgroundColor": "#B7876D",
     "active": true
   },
@@ -130,6 +152,7 @@ const COUNTER_PRODUCTS = [
     "id": "pineapple-moscato",
     "name": "Pineapple Moscato",
     "image": "assets/chocolates/pineapple-moscato-tropical-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/pineapple-moscato.png",
     "backgroundColor": "#568D91",
     "active": true
   },
@@ -137,6 +160,7 @@ const COUNTER_PRODUCTS = [
     "id": "pistachio",
     "name": "Pistachio",
     "image": "assets/chocolates/pistachio-nut-gourmet-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/pistachio.png",
     "backgroundColor": "#435674",
     "active": true
   },
@@ -144,6 +168,7 @@ const COUNTER_PRODUCTS = [
     "id": "pumpkin-spice-latte",
     "name": "Pumpkin Spice Latte",
     "image": "assets/chocolates/pumpkin-spice-latte-gourmet-chocolate._600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/pumpkin-spice-latte.png",
     "backgroundColor": "#B85B3D",
     "active": true
   },
@@ -151,6 +176,7 @@ const COUNTER_PRODUCTS = [
     "id": "raspberry",
     "name": "Raspberry",
     "image": "assets/chocolates/raspberry-dark-chocolate-truffle._600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/raspberry.png",
     "backgroundColor": "#AC4565",
     "active": true
   },
@@ -158,6 +184,7 @@ const COUNTER_PRODUCTS = [
     "id": "salted-caramel",
     "name": "Salted Caramel",
     "image": "assets/chocolates/salted-caramel-dark-milk-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/salted-caramel.png",
     "backgroundColor": "#C09554",
     "active": true
   },
@@ -165,6 +192,7 @@ const COUNTER_PRODUCTS = [
     "id": "smores",
     "name": "S’mores",
     "image": "assets/chocolates/smores-marshmallow-gourmet-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/smores.png",
     "backgroundColor": "#937A9F",
     "active": true
   },
@@ -172,6 +200,7 @@ const COUNTER_PRODUCTS = [
     "id": "turtle-pecan-caramel",
     "name": "Turtle Pecan Caramel",
     "image": "assets/chocolates/turtle-pecan-caramel-chocolate_600x.webp",
+    "topViewImage": "assets/chocolates-top/processed/turtle-pecan-caramel.png",
     "backgroundColor": "#9C5F5B",
     "active": true
   }

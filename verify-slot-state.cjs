@@ -1,0 +1,24 @@
+// Pure state checks complement the real mouse/touch browser scenarios.
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const create = vm.runInNewContext(fs.readFileSync(__dirname + '/counter-selection.js', 'utf8') + '; createCounterSelection');
+const box = create([{id:'a',name:'A',active:true},{id:'b',name:'B',active:true}]);
+const slots = () => Array.from(box.snapshot().slots);
+box.add('a',3);
+assert.deepEqual(slots(),['a','a','a',null,null,null]);
+box.remove(1);box.add('b');
+assert.deepEqual(slots(),['a','b','a',null,null,null], 'Adds fill the first hole, not the end');
+box.undo();box.undo();box.undo();
+assert.equal(box.snapshot().count,0);
+assert.equal(box.snapshot().canUndo,false);
+box.setCapacity(10);box.add('a');box.move(0,9);box.setCapacity(6);
+assert.deepEqual(slots(),['a',null,null,null,null,null], 'Shrinking preserves pieces beyond the new slot range');
+box.undo();assert.equal(slots()[9],'a');assert.equal(box.snapshot().capacity,10);
+box.add('b',9);
+const full=slots();assert.equal(box.add('a').ok,false);assert.equal(box.setCapacity(6).ok,false);
+assert.deepEqual(slots(),full);
+box.clear();assert.equal(box.snapshot().count,0);box.undo();assert.deepEqual(slots(),full);
+for(const quantity of [0,-1,1.5,NaN,Infinity,'2'])assert.equal(box.add('a',quantity).ok,false);
+const copy=box.snapshot();copy.slots[0]='bad';assert.deepEqual(slots(),full);
+console.log('PASS slot state: next hole, grouped Undo, history exhaustion, resize compaction/Undo, capacity, clear restore, invalid input, snapshot isolation.');

@@ -23,7 +23,7 @@ module.exports = async ({ evaluate, send, delay, profile }) => {
     await tap(ids[6]); assert.equal(await count(),'6 / 6');
     assert(await evaluate(`document.querySelector('.builder-footnote').textContent.includes('full')`));
     assert.deepEqual(await evaluate(`[...document.querySelectorAll('.chocolate-card')].map(c=>c.dataset.productId)`),ids);
-    assert(await evaluate(`document.querySelector('.save-box').disabled`));
+    assert(await evaluate(`!document.querySelector('.save-box').disabled`));
     assert(await evaluate(`(() => {const i=document.querySelector('.box-scene img'),r=i.getBoundingClientRect(),s=i.parentElement.getBoundingClientRect();return Math.abs(r.width/r.height-i.naturalWidth/i.naturalHeight)<.001 && r.top>=s.top-1 && r.bottom<=s.bottom+1 && r.left>=s.left-1 && r.right<=s.right+1;})()`),'Full-box summary preserves image aspect ratio and containment');
     assert(await evaluate(`document.documentElement.scrollWidth<=innerWidth && document.querySelector('.save-box').getBoundingClientRect().bottom<=innerHeight`));
     const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
@@ -47,7 +47,7 @@ module.exports = async ({ evaluate, send, delay, profile }) => {
   await evaluate(`document.querySelector('.chocolate-card').click();document.querySelector('[data-capacity-option="6"]').click()`);
   assert.equal(await count(),'10 / 10');
   assert(await evaluate(`document.querySelector('.builder-footnote').textContent.includes('10 pieces selected')`));
-  assert(await evaluate(`[...document.querySelectorAll('.builder-controls button')].every(b=>b.disabled)`));
+  assert(await evaluate(`!document.querySelector('.save-box').disabled`));
   // Exercise the state boundary with inactive entries and recency without reordering UI.
   const model=await evaluate(`(() => {const s=createCounterSelection([{id:'a',name:'A',active:true},{id:'b',name:'B',active:true},{id:'off',name:'Off',active:false}]);s.add('a');s.add('b');s.add('a');const x=s.snapshot();x.pieces.push('bad');return {recent:s.snapshot().recentIds,count:s.snapshot().count,inactive:s.add('off').ok};})()`);
   assert.deepEqual(model,{recent:['a','b'],count:3,inactive:false});
@@ -57,6 +57,7 @@ module.exports = async ({ evaluate, send, delay, profile }) => {
   await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r',unmodifiedText:'\r'});
   await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
   assert.equal(await count(),'1 / 6');
+  await evaluate(`Promise.all([...document.querySelectorAll('#v-counter img')].map(i=>i.decode().catch(()=>{})))`);
   assert(await evaluate(`[...document.querySelectorAll('#v-counter img')].every(i=>i.complete&&i.naturalWidth)`));
   console.log('PASS Phase 2: touch/mouse/keyboard, six and ten capacity limits, rapid duplicates, size preservation/rejection, stable order, recency, inactive products, refresh, and filled-box layouts.');
 };
