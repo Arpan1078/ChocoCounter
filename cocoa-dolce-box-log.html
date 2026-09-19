@@ -176,9 +176,12 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
 <link rel="stylesheet" href="counter.css">
 <link rel="stylesheet" href="counter-builder.css">
 <script src="counter-products.js"></script>
+<script src="counter-catalog-state.js"></script>
 <script src="counter-selection.js"></script>
 <script src="counter-box.js"></script>
 <script src="counter-catalog.js"></script>
+<script src="counter-manage.js"></script>
+<script src="counter-resize.js"></script>
 <script src="counter-transactions.js"></script>
 <script src="counter-foundation.js"></script>
 </head>
@@ -192,6 +195,7 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
     <button data-view="counter" aria-current="page" aria-selected="true">Counter</button>
     <button data-view="boxes" aria-selected="false">Boxes</button>
     <button data-view="insights" aria-selected="false">Insights</button>
+    <button data-view="manage" aria-selected="false">Manage</button>
   </nav>
   <span id="sync" hidden></span>
 </header>
@@ -201,11 +205,11 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
   <section class="view" id="v-counter" aria-label="Counter">
     <div class="foundation">
       <section class="catalog" aria-labelledby="catalog-title">
-        <div class="catalog-top"><h2 id="catalog-title">Chocolates</h2><div class="catalog-tools"><span id="catalog-result"></span><div class="catalog-filter"><button type="button" class="catalog-filter-toggle" id="catalog-filter-toggle" aria-haspopup="true" aria-expanded="false">Filter</button><div class="catalog-filter-menu" id="catalog-filter-menu" role="menu" aria-label="Filter chocolates by category" hidden><button type="button" data-filter="all" role="menuitemradio" aria-checked="true">All</button><button type="button" data-filter="basic" role="menuitemradio" aria-checked="false">Basic</button><button type="button" data-filter="seasonal" role="menuitemradio" aria-checked="false">Seasonal</button><button type="button" data-filter="cocoshots" role="menuitemradio" aria-checked="false">CocoShots</button></div></div><button type="button" id="catalog-edit" aria-pressed="false" aria-label="Edit catalog order" title="Edit catalog order">Edit</button></div></div>
+        <div class="catalog-top"><h2 id="catalog-title">Chocolates</h2><div class="catalog-tools"><span id="catalog-result"></span><div class="catalog-filter"><button type="button" class="catalog-filter-toggle" id="catalog-filter-toggle" aria-haspopup="true" aria-expanded="false">Filter</button><div class="catalog-filter-menu" id="catalog-filter-menu" role="menu" aria-label="Filter chocolates by category" hidden><button type="button" data-filter="all" role="menuitemradio" aria-checked="true">All</button><button type="button" data-filter="basic" role="menuitemradio" aria-checked="false">Basic</button><button type="button" data-filter="seasonal" role="menuitemradio" aria-checked="false">Seasonal</button><button type="button" data-filter="cocoshots" role="menuitemradio" aria-checked="false">CocoShots</button></div></div></div></div>
         <div class="chocolate-grid"></div>
         <p class="catalog-empty" id="catalog-empty" hidden>No chocolates available in this category.</p>
       </section>
-      <aside class="builder" aria-labelledby="builder-title">
+      <div class="counter-divider" role="separator" aria-label="Resize Chocolates and Your Box panels" tabindex="0"></div><aside class="builder" aria-labelledby="builder-title">
         <div class="builder-heading"><h2 id="builder-title">Your Box</h2></div>
         <span class="box-size-label" id="size-label">BOX SIZE</span>
         <div class="box-size-options" role="group" aria-labelledby="size-label"><button type="button" data-capacity-option="6" aria-label="6 pieces" aria-pressed="true">6</button><button type="button" data-capacity-option="10" aria-label="10 pieces" aria-pressed="false">10</button><button type="button" data-capacity-option="16" aria-label="16 pieces" aria-pressed="false">16</button><button type="button" data-capacity-option="30" aria-label="30 pieces" aria-pressed="false">30</button><button type="button" data-capacity-option="50" aria-label="50 pieces" aria-pressed="false">50</button></div>
@@ -220,6 +224,16 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
         <p class="builder-footnote">Select chocolates to fill your box.</p>
       </aside>
     </div>
+  </section>
+
+  <section class="view" id="v-manage" aria-label="Manage Chocolates" hidden>
+    <div class="manage-page section">
+      <div class="manage-heading"><h2>Manage Chocolates</h2><p class="muted small">Manage availability, order, and catalog items.</p></div>
+      <div id="manage-grid-host"></div>
+    </div>
+    <dialog id="manage-add-dialog" class="counter-dialog" aria-labelledby="manage-add-title">
+      <form id="manage-add-form" method="dialog"><h2 id="manage-add-title">Add Chocolate</h2><label for="manage-name">Chocolate Name</label><input class="field" id="manage-name" name="name" required autocomplete="off"><label for="manage-category">Category</label><select class="field" id="manage-category" name="category" required><option value="basic">Basic</option><option value="seasonal">Seasonal</option><option value="cocoshot">CocoShots</option></select><label for="manage-image">Image</label><input class="field" id="manage-image" name="image" type="file" accept="image/*"><p class="manage-form-error" id="manage-form-error" role="alert" hidden></p><div class="dialog-actions"><button type="button" data-manage-cancel>Cancel</button><button type="submit">Add Chocolate</button></div></form>
+    </dialog>
   </section>
   <!-- Retained legacy transaction UI and hooks for later phases. Not navigable. -->
   <section class="view" id="v-legacy-counter" hidden inert>
@@ -772,7 +786,11 @@ document.addEventListener("keydown", e => {
   if (e.key==="Enter" && !$("#save").disabled && !e.target.closest("button")){ e.preventDefault(); saveBox(); }
 });
 
-mountCounterFoundation({ products: COUNTER_PRODUCTS, escapeHTML: esc, transactionLocation:loc.value, onSaved:records=>{boxes=records;} });
+const catalogProducts=CounterCatalogState.products();
+const foundation=mountCounterFoundation({ products:catalogProducts, escapeHTML: esc, transactionLocation:loc.value, onSaved:records=>{boxes=records;} });
+CounterCatalogState.subscribe(products=>foundation.refreshProducts(products));
+mountCounterManage({escapeHTML:esc});
+mountCounterResize();
 renderCounter(); setSync();
 initDb();
 })();

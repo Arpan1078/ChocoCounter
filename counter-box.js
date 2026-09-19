@@ -28,7 +28,7 @@ for(const [capacity,columns] of [[16,4],[30,6],[50,10]]) {
  slots:Array.from({length:capacity},(_,i)=>({x:(i%columns+.5)*100/columns,y:(Math.floor(i/columns)+.5)*100/rows}))};
 }
 function mountCounterBox(scene, products, onRemove, onMove) {
-  const byId=new Map(products.map(p=>[p.id,p]));
+  let byId=new Map(products.map(p=>[p.id,p]));
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   // Every occupied slot is permanently interactive: no edit-mode toggle gates
   // tap-to-remove or drag-to-move/swap. See the pointer handlers below.
@@ -112,5 +112,5 @@ function mountCounterBox(scene, products, onRemove, onMove) {
     const delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-keyboardColumns,ArrowDown:keyboardColumns}[e.key];
     if(delta){e.preventDefault();onMove(Number(b.dataset.slot),Number(b.dataset.slot)+delta);}
   });
-  return {render};
+  return {render,setProducts(nextProducts){byId=new Map(nextProducts.map(p=>[p.id,p]));}};
 }

@@ -18,6 +18,7 @@ function createCounterSelection(products, now=Date.now) {
       items:[...quantities].map(([id,quantity])=>({id,name:catalog.get(id).name,quantity})), recentIds:[...recentIds] };
   }
   return {
+    setProducts(nextProducts) { nextProducts.forEach(product => catalog.set(product.id, product)); },
     snapshot,
     resetTransaction() {slots=Array(capacity).fill(null);history.length=0;startedAt=null;undoCount=0;removalCount=0;},
     add(id, quantity=1) {

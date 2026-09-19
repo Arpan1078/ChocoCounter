@@ -137,3 +137,37 @@
    not width), so its own clear margin below the last row shrinks in step --
    the overlay controls shrink to match so they still land below every slot. */
 @media(min-width:1024px) and (max-width:1499px) and (orientation:landscape){.box-scene{flex:1 1 auto;min-height:0;}.box-undo,.box-reset{min-height:23px;padding:3px 6px;bottom:8px;font-size:11px;}}
+
+/* Phase C management workspace and resizable Counter split. */
+@media(min-width:761px){
+   .foundation{grid-template-columns:minmax(0,var(--counter-catalog-split,65fr)) 10px minmax(0,var(--counter-builder-split,35fr));}
+   .counter-divider{width:10px;align-self:stretch;position:relative;cursor:col-resize;touch-action:none;}
+   .counter-divider::after{content:"";position:absolute;inset:0 4px;background:var(--counter-border);transition:background .15s;}
+   .counter-divider:hover::after,.counter-divider.is-dragging::after{background:var(--counter-accent);}
+}
+@media(max-width:760px){.counter-divider{display:none;}}
+.manage-page{padding:24px;}
+.manage-heading{margin-bottom:22px;}
+.manage-heading h2{font:500 29px/1.2 var(--serif);margin:0;}
+.manage-heading p{margin:4px 0 0;}
+.manage-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
+.manage-card{position:relative;border:1px solid var(--counter-border);background:var(--counter-paper);height:100%;cursor:grab;}
+.manage-card:active{cursor:grabbing;}
+.manage-card .chocolate-visual{display:grid;place-items:center;aspect-ratio:1.12;overflow:hidden;background:var(--product-background);}
+.manage-card .chocolate-visual img{width:94%;height:94%;object-fit:contain;}
+.manage-card .chocolate-name{display:flex;align-items:flex-start;gap:6px;min-height:55px;padding:11px 48px 11px 12px;}
+.manage-status{font-size:11px;color:var(--counter-muted);white-space:nowrap;}
+.manage-toggle{position:absolute;top:7px;right:7px;min-width:32px;min-height:32px;border:1px solid var(--counter-border);background:var(--counter-paper);color:var(--counter-accent);font-size:12px;padding:4px 7px;}
+.manage-toggle:hover{background:var(--color-bg-secondary);}
+.manage-item-inactive .manage-card{opacity:.62;}
+.manage-item-inactive .manage-card .chocolate-name{color:var(--counter-muted);}
+.manage-card .image-missing{background:var(--product-background);}
+.manage-card .image-missing::after{content:"";width:36%;aspect-ratio:1;border-radius:50%;background:rgba(0,0,0,.14);}
+.manage-image-fallback{display:none;}
+.manage-add-card{min-width:0;}
+.manage-add-card button{width:100%;height:100%;min-height:180px;border:1px dashed var(--counter-accent);background:var(--color-bg-secondary);color:var(--counter-accent);display:grid;place-content:center;gap:8px;text-align:center;}
+.manage-add-card button span{font-size:30px;line-height:1;}
+.manage-add-card button strong{font-size:13px;font-weight:500;}
+.manage-form-error{color:var(--warn);font-size:13px;margin:8px 0 0;}
+.manage-add-card button:focus-visible,.manage-toggle:focus-visible{outline:2px solid var(--counter-accent);outline-offset:2px;}
+@media(max-width:760px){.manage-page{padding:18px 14px;}.manage-grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));}.manage-card .chocolate-name{font-size:12px;padding:9px 42px 9px 9px;}.manage-add-card button{min-height:150px;}}

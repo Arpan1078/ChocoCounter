@@ -1,26 +1,24 @@
 ﻿/* Stable catalog targets; all quantities and visuals derive from the slot state. */
 function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation='', onSaved=()=>{} }) {
   const root=document.querySelector('#v-counter'), selection=createCounterSelection(products);
-  const available=products.filter(p=>p.active), byId=new Map(products.map(p=>[p.id,p]));
+  let currentProducts=products, available=products.filter(p=>p.active), byId=new Map(products.map(p=>[p.id,p]));
   const grid=root.querySelector('.chocolate-grid');
   let quantityProduct=null, quantityText='', saving=false, savedNoticeTimer=null, catalogFilter='all';
-  grid.innerHTML=available.map(p=>`<div class="catalog-item"><button type="button" class="chocolate-card" data-product-id="${esc(p.id)}" aria-label="Add ${esc(p.name)}"><span class="chocolate-visual" style="--product-background:${esc(p.backgroundColor)}"><img src="${esc(p.image)}" alt="" draggable="false" width="600" height="540"></span><span class="chocolate-name"><span>${esc(p.name)}</span><span class="quantity-badge" aria-hidden="true" hidden></span></span></button><button type="button" class="quantity-open" data-quantity-id="${esc(p.id)}" aria-label="Choose quantity for ${esc(p.name)}">Qty</button></div>`).join('');
-  const cards=new Map([...grid.querySelectorAll('.chocolate-card')].map(c=>[c.dataset.productId,c]));
-  const catalogItems=new Map([...cards].map(([id,c])=>[id,c.closest('.catalog-item')]));
-  // A product photo that fails to load (e.g. a CocoShot asset not supplied yet)
-  // falls back to a neutral placeholder on its existing color swatch, never a
-  // broken-image icon and never a fake chocolate photo.
-  grid.querySelectorAll('.chocolate-card img').forEach(img=>{
-    img.addEventListener('error',()=>{img.closest('.chocolate-visual').classList.add('image-missing');img.remove();},{once:true});
-  });
+  let cards=new Map(), catalogItems=new Map();
+  function buildCatalog(){
+    grid.innerHTML=available.map(p=>`<div class="catalog-item"><button type="button" class="chocolate-card" data-product-id="${esc(p.id)}" aria-label="Add ${esc(p.name)}"><span class="chocolate-visual${p.image?'':' image-missing'}" style="--product-background:${esc(p.backgroundColor||'#817151')}">${p.image?`<img src="${esc(p.image)}" alt="" draggable="false" width="600" height="540">`:''}</span><span class="chocolate-name"><span>${esc(p.name)}</span><span class="quantity-badge" aria-hidden="true" hidden></span></span></button><button type="button" class="quantity-open" data-quantity-id="${esc(p.id)}" aria-label="Choose quantity for ${esc(p.name)}">Qty</button></div>`).join('');
+    cards=new Map([...grid.querySelectorAll('.chocolate-card')].map(c=>[c.dataset.productId,c]));
+    catalogItems=new Map([...cards].map(([id,c])=>[id,c.closest('.catalog-item')]));
+    grid.querySelectorAll('.chocolate-card img').forEach(img=>img.addEventListener('error',()=>{img.closest('.chocolate-visual').classList.add('image-missing');img.remove();},{once:true}));
+  }
+  buildCatalog();
   const catalogEmpty=root.querySelector('#catalog-empty');
-  const catalogEdit=root.querySelector('#catalog-edit');
   const filterToggle=root.querySelector('#catalog-filter-toggle'), filterMenu=root.querySelector('#catalog-filter-menu');
   const filterLabels={all:'Filter',basic:'Filter: Basic',seasonal:'Filter: Seasonal',cocoshots:'Filter: CocoShots'};
   function applyFilter(){
     let visible=0;
     for(const p of available){
-      const show=catalogFilter==='all'||p.category===catalogFilter;
+      const show=catalogFilter==='all'||p.category===catalogFilter||(catalogFilter==='cocoshots'&&p.category==='cocoshot');
       catalogItems.get(p.id).hidden=!show;
       if(show)visible++;
     }
@@ -43,7 +41,6 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   document.addEventListener('click',e=>{if(!filterMenu.hidden&&!e.target.closest('.catalog-filter'))closeFilterMenu();});
   filterMenu.addEventListener('keydown',e=>{if(e.key==='Escape'){closeFilterMenu();filterToggle.focus();}});
   applyFilter();
-  const catalogOrder=mountCatalogOrder(grid,catalogEdit,available,()=>render());
   const summary=root.querySelector('.box-summary');summary.setAttribute('aria-label','Selected chocolates');summary.tabIndex=0;
   root.querySelector('.builder-heading').insertAdjacentHTML('beforeend','<div class="transaction-notice" role="status" aria-live="polite" hidden></div>');
   const notice=root.querySelector('.transaction-notice');
@@ -56,11 +53,8 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   const input=root.querySelector('#quantity-value'), confirm=root.querySelector('#quantity-confirm');
   const boxView=mountCounterBox(root.querySelector('.box-scene'),products,i=>{apply(selection.remove(i),[],i);},(a,b)=>{apply(selection.move(a,b),[],b);});
   function render(added=[]) {
-    const catalogEditing=catalogOrder.isActive();
-    catalogEdit.setAttribute('aria-label',catalogEditing?'Done editing catalog order':'Edit catalog order');
     const state=selection.snapshot(), quantities=new Map(state.items.map(i=>[i.id,i.quantity]));
-    for(const p of available){const c=cards.get(p.id),q=quantities.get(p.id)||0,b=c.querySelector('.quantity-badge');b.hidden=!q;b.textContent=q||'';c.setAttribute('aria-label',catalogEditing?`Reorder ${p.name}; Alt plus arrow keys to swap`:`Add ${p.name}${q?`, ${q} in box`:''}`);}
-    grid.querySelectorAll('.quantity-open').forEach(b=>b.disabled=catalogEditing);
+    for(const p of available){const c=cards.get(p.id),q=quantities.get(p.id)||0,b=c.querySelector('.quantity-badge');b.hidden=!q;b.textContent=q||'';c.setAttribute('aria-label',`Add ${p.name}${q?`, ${q} in box`:''}`);}
     root.querySelectorAll('[data-capacity-option]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.capacityOption)===state.capacity));
     root.querySelector('#foundation-count').textContent=`${state.count} / ${state.capacity}`;
     complete.hidden=state.count!==state.capacity;
@@ -72,7 +66,6 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   }
   function apply(result,added=[],focusSlot=null){if(result.ok){render(result.added||added);if(focusSlot!==null)root.querySelector(`[data-slot="${focusSlot}"]`)?.focus({preventScroll:true});}else if(result.message)status.textContent=result.message;}
   grid.addEventListener('click',e=>{
-    if(catalogOrder.isActive())return;
     const qty=e.target.closest('[data-quantity-id]');
     if(qty){quantityProduct=qty.dataset.quantityId;quantityText='';root.querySelector('#quantity-title').textContent=byId.get(quantityProduct).name;updateQuantity();quantityDialog.showModal();input.focus();return;}
     const card=e.target.closest('.chocolate-card');if(!card)return;
@@ -106,5 +99,7 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   };
   root.querySelectorAll('[data-capacity-option]').forEach(b=>b.onclick=()=>apply(selection.setCapacity(Number(b.dataset.capacityOption))));
   render();
-  return {getSelection:selection.snapshot};
+  return {getSelection:selection.snapshot,refreshProducts(nextProducts){
+    currentProducts=nextProducts;available=currentProducts.filter(p=>p.active);byId=new Map(currentProducts.map(p=>[p.id,p]));selection.setProducts(currentProducts);boxView.setProducts(currentProducts);buildCatalog();applyFilter();render();
+  }};
 }
