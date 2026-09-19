@@ -139,6 +139,13 @@
 @media(min-width:1024px) and (max-width:1499px) and (orientation:landscape){.box-scene{flex:1 1 auto;min-height:0;}.box-undo,.box-reset{min-height:23px;padding:3px 6px;bottom:8px;font-size:11px;}}
 
 /* Phase C management workspace and resizable Counter split. */
+/* Keep the 50-piece controls below the last row even at the narrowest split. */
+.box-visual:has(.box-render[src="assets/box/50-piece-box.png"]) :is(.box-undo,.box-reset){bottom:0;}
+/* The 30-piece photo has a shallow bottom mat: keep its controls inside that
+   margin, below the fifth row, without changing the other box layouts. */
+.box-visual:has(.box-render[src="assets/box/30-piece-box.png"]){container-type:inline-size;}
+.box-visual:has(.box-render[src="assets/box/30-piece-box.png"]) :is(.box-undo,.box-reset){bottom:0;min-height:0;height:min(23px,6cqw);padding:0 4px;font-size:min(11px,3cqw);}
+.box-visual:has(.box-render[src="assets/box/30-piece-box.png"]) :is(.box-undo,.box-reset) svg{width:min(14px,4cqw);height:min(14px,4cqw);}
 /* Photo boxes follow panel width, not the remaining landscape flex height.
    Keep the image and percentage-positioned slots in the same 3:2 frame.
    The existing builder scroll handles panels too wide for the viewport height. */

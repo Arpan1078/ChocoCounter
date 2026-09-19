@@ -1,4 +1,4 @@
-/* Both renders are 1536x1024 top-down photos of the actual box, straight overhead.
+/* The real renders are top-down photos of the actual boxes, straight overhead.
    Slot centers below were measured directly from the cavity pixels in each image
    (dark-floor bounding-box centers of the 2x3 / 2x5 grid), not assumed generically.
    With a true top-down view there is no perspective to fake: every chocolate is the
@@ -18,15 +18,27 @@ const COUNTER_BOX_LAYOUTS = {
   10: { image:'assets/box/top-down-10.png', ratio:'1536/1024', columns:5, topScale:13, fallbackScale:16.9, slots:[
     {x:15.59,y:34.62},{x:32.81,y:34.62},{x:49.97,y:34.62},{x:67.12,y:34.62},{x:84.21,y:34.62},
     {x:15.59,y:58.74},{x:32.81,y:58.74},{x:49.97,y:58.74},{x:67.12,y:58.74},{x:84.21,y:58.74}
-  ] }
+  ] },
+  // Full, unmodified 1536x1024 asset; its square tray sits within that canvas.
+  // Cavity floor centers measured in source pixels: columns 431/654/877/1100,
+  // rows 247/444/638/829. Normalize against the whole image, including margins.
+  16: { image:'assets/box/16-piece-box.png', ratio:'1536/1024', width:1536, height:1024,
+    columns:4, topScale:10.3, fallbackScale:13.4,
+    slots:[247,444,638,829].flatMap(y=>[431,654,877,1100].map(x=>({x:x/1536*100,y:y/1024*100})))
+  },
+  // Corrected 30-cavity asset: six columns by five rows. Source-pixel floor
+  // centers are normalized against the full canvas, retaining its margins.
+  30: { image:'assets/box/30-piece-box.png', ratio:'1536/1024', width:1536, height:1024,
+    columns:6, topScale:7.8, fallbackScale:10.2,
+    slots:[214,372,530,686,842].flatMap(y=>[274,472,670,868,1067,1266].map(x=>({x:x/1536*100,y:y/1024*100})))
+  },
+  // Fifty visible cavities, ten columns by five rows. Measured floor centers
+  // retain the source photo's slight spacing variations and full 1536x1024 canvas.
+  50: { image:'assets/box/50-piece-box.png', ratio:'1536/1024', width:1536, height:1024,
+    columns:10, topScale:6.6, fallbackScale:8.6,
+    slots:[235,370,505,641,776].flatMap(y=>[154,292,431,569,708,846,985,1123,1262,1400].map(x=>({x:x/1536*100,y:y/1024*100})))
+  }
 };
-
-// Temporary trays can later be replaced by measured image layouts.
-for(const [capacity,columns] of [[16,4],[30,6],[50,10]]) {
- const rows=capacity/columns;
- COUNTER_BOX_LAYOUTS[capacity]={temporary:true,columns,rows,topScale:76/columns,fallbackScale:98/columns,
- slots:Array.from({length:capacity},(_,i)=>({x:(i%columns+.5)*100/columns,y:(Math.floor(i/columns)+.5)*100/rows}))};
-}
 function mountCounterBox(scene, products, onRemove, onMove) {
   let byId=new Map(products.map(p=>[p.id,p]));
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -63,7 +75,7 @@ function mountCounterBox(scene, products, onRemove, onMove) {
       scene.innerHTML=`<div class="temporary-tray" style="--tray-columns:${layout.columns};--tray-rows:${layout.rows}"><div class="tray-cavities" aria-hidden="true">${state.slots.map(()=>'<span></span>').join('')}</div><div class="box-overlay">${buttons}</div></div>`;
       return;
     }
-    scene.innerHTML=`<div class="box-frame"><img class="box-render" src="${layout.image}" alt="${state.capacity}-piece Cocoa Dolce box, top-down view" width="1536" height="1024"><div class="box-overlay">${buttons}</div></div>`;
+    scene.innerHTML=`<div class="box-frame" style="aspect-ratio:${layout.ratio}"><img class="box-render" src="${layout.image}" alt="${state.capacity}-piece Cocoa Dolce box, top-down view" width="${layout.width||1536}" height="${layout.height||1024}"><div class="box-overlay">${buttons}</div></div>`;
   }
   // Nearest valid slot within a generous radius, but never a drop outside the scene.
   function destination(x,y,occupiedOnly=false) {
