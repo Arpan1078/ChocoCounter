@@ -1,0 +1,559 @@
+{
+  "source": "Cocoa Dolce published chocolate flavor sheet",
+  "retrieved": "2026-09-17",
+  "chocolates": [
+    {
+      "classId": 0,
+      "id": "turtle",
+      "name": "Turtle",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "nuts"
+      ],
+      "active": true,
+      "image": "/chocolates/turtle.png",
+      "description": "Pecan pieces in a soft, lightly salted vanilla bean caramel."
+    },
+    {
+      "classId": 1,
+      "id": "champagne",
+      "name": "Champagne",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/champagne.png",
+      "description": "Sweet ganache made with Spanish brut cava, topped with sparkling sugar."
+    },
+    {
+      "classId": 2,
+      "id": "grey_salt_caramel",
+      "name": "Grey Salt Caramel",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk"
+      ],
+      "active": true,
+      "image": "/chocolates/grey_salt_caramel.png",
+      "description": "Chewy vanilla bean caramel in 54% chocolate, finished with artisan salt."
+    },
+    {
+      "classId": 3,
+      "id": "bananas_foster",
+      "name": "Bananas Foster",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/bananas_foster.png",
+      "description": "Banana ganache with dark rum and cinnamon."
+    },
+    {
+      "classId": 4,
+      "id": "brownie_batter",
+      "name": "Brownie Batter",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk"
+      ],
+      "active": true,
+      "image": "/chocolates/brownie_batter.png",
+      "description": "Dark ganache blended with cocoa powder, vanilla bean and salt."
+    },
+    {
+      "classId": 5,
+      "id": "cheesecake",
+      "name": "Cheesecake",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "wheat"
+      ],
+      "active": true,
+      "image": "/chocolates/cheesecake.png",
+      "description": "White chocolate cheesecake ganache layered with housemade graham cracker."
+    },
+    {
+      "classId": 6,
+      "id": "confetti_cake",
+      "name": "Confetti Cake",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "wheat",
+        "nuts"
+      ],
+      "active": true,
+      "image": "/chocolates/confetti_cake.png",
+      "description": "Gold chocolate ganache with almond and a confetti crumb layer."
+    },
+    {
+      "classId": 7,
+      "id": "amaretto",
+      "name": "Amaretto",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "nuts",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/amaretto.png",
+      "description": "Milk chocolate ganache with almond liqueur."
+    },
+    {
+      "classId": 8,
+      "id": "cookies_cream",
+      "name": "Cookies & Cream",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "wheat"
+      ],
+      "active": true,
+      "image": "/chocolates/cookies_cream.png",
+      "description": "Chocolate cookie crumble layered with vanilla bean ganache."
+    },
+    {
+      "classId": 9,
+      "id": "creme_brulee",
+      "name": "Creme Brulee",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "eggs"
+      ],
+      "active": true,
+      "image": "/chocolates/creme_brulee.png",
+      "description": "Custard ganache finished with white chocolate and raw sugar."
+    },
+    {
+      "classId": 10,
+      "id": "dulce_de_leche",
+      "name": "Dulce de Leche",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/dulce_de_leche.png",
+      "description": "Dulce de leche caramel with coffee milk ganache and Irish cream."
+    },
+    {
+      "classId": 11,
+      "id": "espresso_martini",
+      "name": "Espresso Martini",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/espresso_martini.png",
+      "description": "Espresso vodka caramel under a milk and dark ganache blend."
+    },
+    {
+      "classId": 12,
+      "id": "key_lime_pie",
+      "name": "Key Lime Pie",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "wheat"
+      ],
+      "active": true,
+      "image": "/chocolates/key_lime_pie.png",
+      "description": "Tart key lime white chocolate ganache with graham cracker crumb."
+    },
+    {
+      "classId": 13,
+      "id": "manhattan",
+      "name": "Manhattan",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/manhattan.png",
+      "description": "Whiskey milk ganache with a cherry fruit paste layer."
+    },
+    {
+      "classId": 14,
+      "id": "peanut_butter_caramel",
+      "name": "Peanut Butter Caramel",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "nuts"
+      ],
+      "active": true,
+      "image": "/chocolates/peanut_butter_caramel.png",
+      "description": "Peanut butter white ganache layered with soft caramel and peanuts."
+    },
+    {
+      "classId": 15,
+      "id": "pineapple_moscato",
+      "name": "Pineapple Moscato",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/pineapple_moscato.png",
+      "description": "Pineapple fruit paste with moscato-infused white ganache."
+    },
+    {
+      "classId": 16,
+      "id": "pistachio",
+      "name": "Pistachio",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "wheat",
+        "nuts"
+      ],
+      "active": true,
+      "image": "/chocolates/pistachio.png",
+      "description": "White chocolate pistachio ganache over a pistachio crunch layer."
+    },
+    {
+      "classId": 17,
+      "id": "raspberry",
+      "name": "Raspberry",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/raspberry.png",
+      "description": "Dark ganache with raspberry puree and black raspberry liqueur."
+    },
+    {
+      "classId": 18,
+      "id": "salted_caramel",
+      "name": "Salted Caramel",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk"
+      ],
+      "active": true,
+      "image": "/chocolates/salted_caramel.png",
+      "description": "Housemade salted caramel folded into dark and milk ganache."
+    },
+    {
+      "classId": 19,
+      "id": "tea_honey",
+      "name": "Tea & Honey",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk"
+      ],
+      "active": true,
+      "image": "/chocolates/tea_honey.png",
+      "description": "White ganache infused with Earl Grey tea and Hawaiian honey."
+    },
+    {
+      "classId": 20,
+      "id": "lemon",
+      "name": "Lemon",
+      "type": "basic",
+      "contains": [
+        "soy",
+        "milk"
+      ],
+      "active": true,
+      "image": "/chocolates/lemon.png",
+      "description": "Bright, tart lemon blended into smooth white chocolate ganache."
+    },
+    {
+      "classId": 22,
+      "id": "caramel_apple_cider",
+      "name": "Caramel Apple Cider",
+      "type": "seasonal",
+      "contains": [
+        "soy",
+        "milk"
+      ],
+      "active": true,
+      "image": "/chocolates/caramel_apple_cider.png",
+      "description": "Spiced apple cider blended into a creamy caramel."
+    },
+    {
+      "classId": 23,
+      "id": "creamsicle",
+      "name": "Creamsicle",
+      "type": "seasonal",
+      "contains": [
+        "soy",
+        "milk"
+      ],
+      "active": false,
+      "image": "/chocolates/creamsicle.png",
+      "description": "White ganache with orange citrus and vanilla."
+    },
+    {
+      "classId": 24,
+      "id": "maple_cream",
+      "name": "Maple Cream",
+      "type": "seasonal",
+      "contains": [
+        "soy",
+        "milk"
+      ],
+      "active": true,
+      "image": "/chocolates/maple_cream.png",
+      "description": "Barrel aged maple syrup whipped into a soft caramel cream."
+    },
+    {
+      "classId": 25,
+      "id": "mint",
+      "name": "Mint",
+      "type": "seasonal",
+      "contains": [
+        "soy",
+        "milk"
+      ],
+      "active": false,
+      "image": "/chocolates/mint.png",
+      "description": "Layered dark and white ganache with organic peppermint oil."
+    },
+    {
+      "classId": 26,
+      "id": "peach_cobbler",
+      "name": "Peach Cobbler",
+      "type": "seasonal",
+      "contains": [
+        "soy",
+        "milk",
+        "wheat"
+      ],
+      "active": true,
+      "image": "/chocolates/peach_cobbler.png",
+      "description": "Peach and vanilla bean ganache over a cinnamon streusel crunch."
+    },
+    {
+      "classId": 27,
+      "id": "pumpkin_spice_latte",
+      "name": "Pumpkin Spice Latte",
+      "type": "seasonal",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/pumpkin_spice_latte.png",
+      "description": "Spiced pumpkin and espresso ganache with a touch of bourbon."
+    },
+    {
+      "classId": 28,
+      "id": "smores",
+      "name": "S'mores",
+      "type": "seasonal",
+      "contains": [
+        "soy",
+        "milk",
+        "eggs",
+        "wheat"
+      ],
+      "active": true,
+      "image": "/chocolates/smores.png",
+      "description": "Marshmallow cream layered with housemade graham cracker."
+    },
+    {
+      "classId": 29,
+      "id": "strawberry_shortcake",
+      "name": "Strawberry Shortcake",
+      "type": "seasonal",
+      "contains": [
+        "soy",
+        "milk",
+        "wheat",
+        "alcohol"
+      ],
+      "active": false,
+      "image": "/chocolates/strawberry_shortcake.png",
+      "description": "Strawberry ganache with strawberry fruit paste and a lemon cookie."
+    },
+    {
+      "classId": 30,
+      "id": "shot_bourbon",
+      "name": "Bourbon",
+      "type": "cocoashot",
+      "contains": [
+        "soy",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/shot_bourbon.png",
+      "description": "Dark chocolate truffle with double oaked bourbon."
+    },
+    {
+      "classId": 31,
+      "id": "shot_old_fashioned",
+      "name": "Old Fashioned",
+      "type": "cocoashot",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/shot_old_fashioned.png",
+      "description": "Whiskey and bitters in a single bite."
+    },
+    {
+      "classId": 32,
+      "id": "shot_tequila",
+      "name": "Tequila",
+      "type": "cocoashot",
+      "contains": [
+        "soy",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/shot_tequila.png",
+      "description": "Blanco tequila topped with salt and lime zest."
+    },
+    {
+      "classId": 33,
+      "id": "shot_whiskey",
+      "name": "Whiskey",
+      "type": "cocoashot",
+      "contains": [
+        "soy",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/shot_whiskey.png",
+      "description": "Dark chocolate truffle with oaky Irish and American whiskey."
+    },
+    {
+      "classId": 34,
+      "id": "shot_amaretto",
+      "name": "Amaretto Shot",
+      "type": "cocoashot",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/shot_amaretto.png",
+      "description": "Milk chocolate truffle with almond liqueur."
+    },
+    {
+      "classId": 35,
+      "id": "shot_chocolate_cake",
+      "name": "Chocolate Cake",
+      "type": "cocoashot",
+      "contains": [
+        "soy",
+        "nuts",
+        "alcohol"
+      ],
+      "active": true,
+      "image": "/chocolates/shot_chocolate_cake.png",
+      "description": "Dark chocolate with hazelnut liqueur and vanilla vodka."
+    },
+    {
+      "classId": 36,
+      "id": "shot_candy_cane_bark",
+      "name": "Candy Cane Bark",
+      "type": "cocoashot",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": false,
+      "image": "/chocolates/shot_candy_cane_bark.png",
+      "description": "Peppermint schnapps and chocolate liqueur, holiday only."
+    },
+    {
+      "classId": 37,
+      "id": "shot_caramel_apple_pie",
+      "name": "Caramel Apple Pie",
+      "type": "cocoashot",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": false,
+      "image": "/chocolates/shot_caramel_apple_pie.png",
+      "description": "Tequila with apple cider and caramel, holiday only."
+    },
+    {
+      "classId": 38,
+      "id": "shot_snickerdoodle",
+      "name": "Snickerdoodle",
+      "type": "cocoashot",
+      "contains": [
+        "soy",
+        "milk",
+        "alcohol"
+      ],
+      "active": false,
+      "image": "/chocolates/shot_snickerdoodle.png",
+      "description": "Cinnamon whiskey with cream liqueur, holiday only."
+    },
+    {
+      "classId": -1,
+      "id": "other",
+      "name": "Other / Unknown",
+      "type": "other",
+      "contains": [],
+      "active": true,
+      "image": null,
+      "description": "Catch-all tile so a sale is never blocked by a missing flavor. Exclude from model training."
+    }
+  ],
+  "containsValues": [
+    "soy",
+    "milk",
+    "eggs",
+    "wheat",
+    "nuts",
+    "alcohol"
+  ],
+  "containsNote": "Taken from the per-piece allergen marks on Cocoa Dolce published flavor sheet.",
+  "imageNote": "All images are local files under /chocolates/. PNG throughout so the cut-out shop photos keep their transparency.",
+  "types": [
+    "basic",
+    "seasonal",
+    "cocoashot",
+    "other"
+  ],
+  "typeNote": "cocoashot = liquor filled, sold 21+ only. Basic pieces may still list alcohol in contains without being age restricted.",
+  "idNote": "classId 21 is retired (Blackberry Sangria removed). Never reuse or renumber ids once labeling starts."
+}
