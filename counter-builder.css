@@ -57,7 +57,7 @@
 }
 /* Final Phase 3: wider box workspace and compact capacity controls. */
 .box-size-options {grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;}
-.builder-controls .capture-box {grid-column:1/-1;min-height:48px;font-size:14px;}
+.builder-controls .capture-box {grid-column:1/-1;min-height:48px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:7px;}
 .box-piece.occupied {pointer-events:auto;cursor:pointer;touch-action:none;}
 .temporary-tray {position:relative;width:100%;min-width:calc(var(--tray-columns)*44px);aspect-ratio:var(--tray-columns)/var(--tray-rows);background:#24221f;border:5px solid #b49a6c;}
 .tray-cavities {position:absolute;inset:0;display:grid;grid-template-columns:repeat(var(--tray-columns),1fr);grid-template-rows:repeat(var(--tray-rows),1fr);}
@@ -80,3 +80,17 @@
 }
 @media(max-width:1023px){.box-scene {overflow:auto;}}
 .temporary-tray .box-piece img {transform:none;max-width:none;}
+/* Catalog order editing is separate from the box's editing state. */
+.catalog-tools {display:flex;align-items:center;gap:12px;flex:none;white-space:nowrap;}
+#catalog-edit {min-width:44px;min-height:44px;padding:4px;border:0;background:transparent;color:var(--counter-muted);font-size:12px;text-decoration:underline;text-underline-offset:3px;}
+#catalog-edit:disabled {opacity:.4;cursor:default;}
+.catalog-reordering .chocolate-card {cursor:grab;touch-action:none;}
+.catalog-reordering .catalog-item {touch-action:none;}
+.catalog-reordering .chocolate-card:hover img {transform:none;}
+.catalog-reordering .quantity-open {opacity:.35;}
+.catalog-dragging {opacity:.45;}
+.catalog-drop-target {outline:2px solid var(--counter-accent);outline-offset:2px;}
+.catalog-drag-preview {position:fixed;z-index:100;transform:translate(-50%,-35%) rotate(2deg);pointer-events:none;opacity:.9;box-shadow:0 8px 22px #0003;}
+.catalog-drag-preview .chocolate-card {width:100%;}
+.catalog-drag-preview .quantity-open {display:none;}
+@media(max-width:380px){.catalog-top{gap:6px;}.catalog-tools{gap:4px;}}

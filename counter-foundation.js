@@ -7,6 +7,8 @@ function mountCounterFoundation({ products, escapeHTML: esc }) {
   grid.innerHTML=available.map(p=>`<div class="catalog-item"><button type="button" class="chocolate-card" data-product-id="${esc(p.id)}" aria-label="Add ${esc(p.name)}"><span class="chocolate-visual" style="--product-background:${esc(p.backgroundColor)}"><img src="${esc(p.image)}" alt="" draggable="false" width="600" height="540"></span><span class="chocolate-name"><span>${esc(p.name)}</span><span class="quantity-badge" aria-hidden="true" hidden></span></span></button><button type="button" class="quantity-open" data-quantity-id="${esc(p.id)}" aria-label="Choose quantity for ${esc(p.name)}">Qty</button></div>`).join('');
   root.querySelector('#catalog-result').textContent=`${available.length} chocolates`;
   const cards=new Map([...grid.querySelectorAll('.chocolate-card')].map(c=>[c.dataset.productId,c]));
+  const catalogEdit=root.querySelector('#catalog-edit');
+  const catalogOrder=mountCatalogOrder(grid,catalogEdit,available,()=>render());
   const summary=root.querySelector('.box-summary');summary.setAttribute('aria-label','Selected chocolates');summary.tabIndex=0;
   const complete=root.querySelector('#box-complete');
   const status=root.querySelector('.builder-footnote');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
@@ -17,22 +19,24 @@ function mountCounterFoundation({ products, escapeHTML: esc }) {
   const input=root.querySelector('#quantity-value'), confirm=root.querySelector('#quantity-confirm');
   const boxView=mountCounterBox(root.querySelector('.box-scene'),products,i=>{apply(selection.remove(i),[],i);},(a,b)=>{if(editing)apply(selection.move(a,b),[],b);});
   function render(added=[]) {
+    const catalogEditing=catalogOrder.isActive();
+    catalogEdit.disabled=editing;catalogEdit.setAttribute('aria-label',catalogEditing?'Done editing catalog order':'Edit catalog order');
     const state=selection.snapshot(), quantities=new Map(state.items.map(i=>[i.id,i.quantity]));
-    for(const p of available){const c=cards.get(p.id),q=quantities.get(p.id)||0,b=c.querySelector('.quantity-badge');b.hidden=!q;b.textContent=q||'';c.disabled=editing;c.setAttribute('aria-label',`Add ${p.name}${q?`, ${q} in box`:''}`);}
-    grid.querySelectorAll('.quantity-open').forEach(b=>b.disabled=editing);
+    for(const p of available){const c=cards.get(p.id),q=quantities.get(p.id)||0,b=c.querySelector('.quantity-badge');b.hidden=!q;b.textContent=q||'';c.disabled=editing;c.setAttribute('aria-label',catalogEditing?`Reorder ${p.name}; Alt plus arrow keys to swap`:`Add ${p.name}${q?`, ${q} in box`:''}`);}
+    grid.querySelectorAll('.quantity-open').forEach(b=>b.disabled=editing||catalogEditing);
     grid.classList.toggle('catalog-editing',editing);
     root.querySelectorAll('[data-capacity-option]').forEach(b=>{b.setAttribute('aria-pressed',Number(b.dataset.capacityOption)===state.capacity);b.disabled=editing;});
     root.querySelector('#foundation-count').textContent=`${state.count} / ${state.capacity}`;
     complete.hidden=state.count!==state.capacity;
     summary.innerHTML=state.count?`<ul>${state.items.map(i=>`<li><img class="summary-thumb" src="${esc(byId.get(i.id).image)}" alt=""><span class="summary-name">${esc(i.name)}</span><span>×${i.quantity}</span></li>`).join('')}</ul>`:'<p>No chocolates selected.</p>';
-    undo.disabled=!state.canUndo;empty.disabled=!state.count;edit.disabled=!state.count&&!editing;edit.textContent=editing?'Done':'Edit';edit.setAttribute('aria-pressed',editing);
+    undo.disabled=!state.canUndo;empty.disabled=!state.count;edit.disabled=catalogEditing||(!state.count&&!editing);edit.textContent=editing?'Done':'Edit';edit.setAttribute('aria-pressed',editing);
     save.disabled=state.count!==state.capacity;
     status.textContent=editing?'Editing box: tap to remove; drag to move or swap.':state.count===state.capacity?'Box full.':'Select chocolates to fill your box.';
     boxView.render(state,editing,added);
   }
   function apply(result,added=[],focusSlot=null){if(result.ok){render(result.added||added);if(focusSlot!==null)root.querySelector(`[data-slot="${focusSlot}"]`)?.focus({preventScroll:true});}else if(result.message)status.textContent=result.message;}
   grid.addEventListener('click',e=>{
-    if(editing)return;
+    if(editing||catalogOrder.isActive())return;
     const qty=e.target.closest('[data-quantity-id]');
     if(qty){quantityProduct=qty.dataset.quantityId;quantityText='';root.querySelector('#quantity-title').textContent=byId.get(quantityProduct).name;updateQuantity();quantityDialog.showModal();input.focus();return;}
     const card=e.target.closest('.chocolate-card');if(!card)return;

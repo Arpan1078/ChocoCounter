@@ -173,6 +173,7 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
 <script src="counter-products.js"></script>
 <script src="counter-selection.js"></script>
 <script src="counter-box.js"></script>
+<script src="counter-catalog.js"></script>
 <script src="counter-foundation.js"></script>
 </head>
 <body>
@@ -194,7 +195,7 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
   <section class="view" id="v-counter" aria-label="Counter">
     <div class="foundation">
       <section class="catalog" aria-labelledby="catalog-title">
-        <div class="catalog-top"><h2 id="catalog-title">Chocolates</h2><span id="catalog-result"></span></div>
+        <div class="catalog-top"><h2 id="catalog-title">Chocolates</h2><div class="catalog-tools"><span id="catalog-result"></span><button type="button" id="catalog-edit" aria-pressed="false" aria-label="Edit catalog order" title="Edit catalog order">Edit</button></div></div>
         <div class="chocolate-grid"></div>
       </section>
       <aside class="builder" aria-labelledby="builder-title">
@@ -204,7 +205,7 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
         <div class="box-scene"><img src="assets/box/top-view-6.png" alt="Empty six-piece box, top-down view" width="1536" height="1024"></div>
         <div class="piece-progress"><span class="piece-count"><strong id="foundation-count" aria-live="polite">0 / 6</strong><span>pieces in your box</span></span><span class="box-complete-badge" id="box-complete" hidden aria-live="polite">&#10003; Box Complete!</span></div>
         <div class="box-summary"><p>No chocolates selected.</p></div>
-        <div class="builder-controls"><button disabled>Undo</button><button disabled>Edit</button><button disabled>Empty Box</button><button class="save-box" disabled>Save Box</button><button type="button" class="capture-box" data-action="capture">Capture</button></div>
+        <div class="builder-controls"><button disabled>Undo</button><button disabled>Edit</button><button disabled>Empty Box</button><button class="save-box" disabled>Save Box</button><button type="button" class="capture-box" data-action="capture"><svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6l1.5-2h5L16 6h4a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><circle cx="12" cy="13" r="4"/></svg><span>Capture</span></button></div>
         <p class="builder-footnote">Select chocolates to fill your box.</p>
       </aside>
     </div>
