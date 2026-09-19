@@ -228,12 +228,13 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
 
   <section class="view" id="v-manage" aria-label="Manage Chocolates" hidden>
     <div class="manage-page section">
-      <div class="manage-heading"><h2>Manage Chocolates</h2><p class="muted small">Manage availability, order, and catalog items.</p></div>
+      <div class="manage-heading"><div><h2>Manage Chocolates</h2><p class="muted small">Manage availability, order, and catalog items.</p></div><button type="button" class="manage-done" data-manage-done>Done</button></div>
       <div id="manage-grid-host"></div>
     </div>
     <dialog id="manage-add-dialog" class="counter-dialog" aria-labelledby="manage-add-title">
-      <form id="manage-add-form" method="dialog"><h2 id="manage-add-title">Add Chocolate</h2><label for="manage-name">Chocolate Name</label><input class="field" id="manage-name" name="name" required autocomplete="off"><label for="manage-category">Category</label><select class="field" id="manage-category" name="category" required><option value="basic">Basic</option><option value="seasonal">Seasonal</option><option value="cocoshot">CocoShots</option></select><label for="manage-image">Image</label><input class="field" id="manage-image" name="image" type="file" accept="image/*"><p class="manage-form-error" id="manage-form-error" role="alert" hidden></p><div class="dialog-actions"><button type="button" data-manage-cancel>Cancel</button><button type="submit">Add Chocolate</button></div></form>
+      <form id="manage-add-form" method="dialog"><h2 id="manage-add-title">Add Chocolate</h2><label for="manage-name">Chocolate Name</label><input class="field" id="manage-name" name="name" required autocomplete="off"><label for="manage-category">Category</label><select class="field" id="manage-category" name="category" required><option value="basic">Basic</option><option value="seasonal">Seasonal</option><option value="cocoshot">CocoShots</option></select><label for="manage-image">Image</label><div class="manage-file-row"><label class="manage-file-button" for="manage-image">Choose Image</label><span class="manage-file-name" id="manage-file-name">No file chosen</span><input class="manage-file-input" id="manage-image" name="image" type="file" accept="image/*"></div><p class="manage-form-error" id="manage-form-error" role="alert" hidden></p><div class="dialog-actions"><button type="button" data-manage-cancel>Cancel</button><button type="submit">Add Chocolate</button></div></form>
     </dialog>
+    <dialog id="manage-done-dialog" class="counter-dialog" aria-labelledby="manage-done-title"><h2 id="manage-done-title">Are you sure?</h2><p>Finish managing the catalog?</p><div class="dialog-actions"><button type="button" data-manage-done-cancel>Cancel</button><button type="button" data-manage-done-confirm>Done</button></div></dialog>
   </section>
   <!-- Retained legacy transaction UI and hooks for later phases. Not navigable. -->
   <section class="view" id="v-legacy-counter" hidden inert>

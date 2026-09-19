@@ -1,5 +1,5 @@
 function mountCounterManage({escapeHTML:esc}){
-  const root=document.querySelector('#v-manage'),host=root.querySelector('#manage-grid-host'),dialog=root.querySelector('#manage-add-dialog'),form=root.querySelector('#manage-add-form'),nameInput=root.querySelector('#manage-name'),categoryInput=root.querySelector('#manage-category'),imageInput=root.querySelector('#manage-image'),error=root.querySelector('#manage-form-error');
+  const root=document.querySelector('#v-manage'),host=root.querySelector('#manage-grid-host'),dialog=root.querySelector('#manage-add-dialog'),doneDialog=root.querySelector('#manage-done-dialog'),form=root.querySelector('#manage-add-form'),nameInput=root.querySelector('#manage-name'),categoryInput=root.querySelector('#manage-category'),imageInput=root.querySelector('#manage-image'),fileName=root.querySelector('#manage-file-name'),error=root.querySelector('#manage-form-error');
   let unsubscribe=null;
   function render(products){
     const old=host.querySelector('.chocolate-grid'),grid=document.createElement('div');
@@ -11,7 +11,7 @@ function mountCounterManage({escapeHTML:esc}){
     grid.addEventListener('click',event=>{
       const toggle=event.target.closest('[data-manage-toggle]');
       if(toggle){event.stopPropagation();CounterCatalogState.setActive(toggle.closest('[data-product-id]').dataset.productId,toggle.dataset.manageToggle==='on');return;}
-      if(event.target.closest('[data-manage-add]')){error.hidden=true;form.reset();dialog.showModal();nameInput.focus();}
+      if(event.target.closest('[data-manage-add]')){error.hidden=true;form.reset();fileName.textContent='No file chosen';dialog.showModal();nameInput.focus();}
     });
   }
   form.addEventListener('submit',async event=>{
@@ -22,7 +22,11 @@ function mountCounterManage({escapeHTML:esc}){
     catch{error.textContent='Could not add this chocolate. Try again.';error.hidden=false;}
     finally{submit.disabled=false;}
   });
+  imageInput.addEventListener('change',()=>{fileName.textContent=imageInput.files[0]?.name||'No file chosen';});
   dialog.querySelector('[data-manage-cancel]').onclick=()=>dialog.close();
+  root.querySelector('[data-manage-done]').onclick=()=>doneDialog.showModal();
+  doneDialog.querySelector('[data-manage-done-cancel]').onclick=()=>doneDialog.close();
+  doneDialog.querySelector('[data-manage-done-confirm]').onclick=()=>{doneDialog.close();document.querySelector('[data-view="counter"]').click();};
   unsubscribe=CounterCatalogState.subscribe(render);render(CounterCatalogState.products());
   return {destroy:()=>unsubscribe?.()};
 }

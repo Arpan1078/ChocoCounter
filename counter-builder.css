@@ -147,9 +147,11 @@
 }
 @media(max-width:760px){.counter-divider{display:none;}}
 .manage-page{padding:24px;}
-.manage-heading{margin-bottom:22px;}
+.manage-heading{margin-bottom:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
 .manage-heading h2{font:500 29px/1.2 var(--serif);margin:0;}
 .manage-heading p{margin:4px 0 0;}
+.manage-done{min-height:44px;padding:9px 18px;border:1px solid var(--counter-accent);background:var(--counter-accent);color:#fff;font-size:13px;}
+.manage-done:hover{filter:brightness(.94);}
 .manage-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
 .manage-card{position:relative;border:1px solid var(--counter-border);background:var(--counter-paper);height:100%;cursor:grab;}
 .manage-card:active{cursor:grabbing;}
@@ -169,5 +171,11 @@
 .manage-add-card button span{font-size:30px;line-height:1;}
 .manage-add-card button strong{font-size:13px;font-weight:500;}
 .manage-form-error{color:var(--warn);font-size:13px;margin:8px 0 0;}
+.manage-file-row{display:flex;align-items:center;gap:10px;min-width:0;margin-top:2px;}
+.manage-file-button{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:7px 12px;border:1px solid var(--counter-accent);background:var(--counter-paper);color:var(--counter-accent);font-size:12px;cursor:pointer;white-space:nowrap;}
+.manage-file-button:hover{background:var(--color-bg-secondary);}
+.counter-dialog .manage-file-input{position:absolute;width:1px;min-width:1px;height:1px;min-height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;padding:0;}
+.manage-file-input:focus-visible + .manage-file-name{outline:2px solid var(--counter-accent);outline-offset:2px;}
+.manage-file-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--counter-muted);font-size:12px;}
 .manage-add-card button:focus-visible,.manage-toggle:focus-visible{outline:2px solid var(--counter-accent);outline-offset:2px;}
 @media(max-width:760px){.manage-page{padding:18px 14px;}.manage-grid{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));}.manage-card .chocolate-name{font-size:12px;padding:9px 42px 9px 9px;}.manage-add-card button{min-height:150px;}}
