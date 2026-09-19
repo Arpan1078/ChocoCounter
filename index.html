@@ -150,7 +150,6 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .pair .duo .bb+.bb{margin-left:-8px}
 .lift{font-size:12px;border-radius:999px;padding:3px 9px;background:var(--surface-2);white-space:nowrap}
 .lift.hi{background:var(--gold);color:#fff}
-.watch{font-family:var(--serif);font-size:56px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
 .empty{padding:28px;text-align:center;color:var(--ink-soft)}
 .menu-row{display:grid;grid-template-columns:40px 1fr 110px 110px 120px auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .menu-row input[type=text],.menu-row select,.field{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 9px;font:inherit;width:100%}
@@ -202,8 +201,9 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
   <section class="view" id="v-counter" aria-label="Counter">
     <div class="foundation">
       <section class="catalog" aria-labelledby="catalog-title">
-        <div class="catalog-top"><h2 id="catalog-title">Chocolates</h2><div class="catalog-tools"><span id="catalog-result"></span><button type="button" id="catalog-edit" aria-pressed="false" aria-label="Edit catalog order" title="Edit catalog order">Edit</button></div></div>
+        <div class="catalog-top"><h2 id="catalog-title">Chocolates</h2><div class="catalog-tools"><span id="catalog-result"></span><div class="catalog-filter"><button type="button" class="catalog-filter-toggle" id="catalog-filter-toggle" aria-haspopup="true" aria-expanded="false">Filter</button><div class="catalog-filter-menu" id="catalog-filter-menu" role="menu" aria-label="Filter chocolates by category" hidden><button type="button" data-filter="all" role="menuitemradio" aria-checked="true">All</button><button type="button" data-filter="basic" role="menuitemradio" aria-checked="false">Basic</button><button type="button" data-filter="seasonal" role="menuitemradio" aria-checked="false">Seasonal</button><button type="button" data-filter="cocoshots" role="menuitemradio" aria-checked="false">CocoShots</button></div></div><button type="button" id="catalog-edit" aria-pressed="false" aria-label="Edit catalog order" title="Edit catalog order">Edit</button></div></div>
         <div class="chocolate-grid"></div>
+        <p class="catalog-empty" id="catalog-empty" hidden>No chocolates available in this category.</p>
       </section>
       <aside class="builder" aria-labelledby="builder-title">
         <div class="builder-heading"><h2 id="builder-title">Your Box</h2></div>
@@ -270,25 +270,6 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
       <div class="stats" id="timeStats"></div>
       <div class="scroll"><table id="boxTable"></table></div>
     </div>
-
-    <div class="section">
-      <h2>Measure the time it adds</h2>
-      <p class="muted" style="max-width:68ch">Time a few boxes the old way with this stopwatch: start when the first piece is picked up, stop when the lid closes. The app times logged boxes the same way, from the first tap to save. The difference is the time the log adds.</p>
-      <div class="two" style="margin-top:12px">
-        <div>
-          <div class="row" style="margin-bottom:10px">
-            <span class="small muted">Box size</span>
-            <select class="field" id="bSize" style="width:auto"></select>
-          </div>
-          <div class="watch" id="watch">0.0 s</div>
-          <div class="row" style="margin-top:12px">
-            <button class="btn gold" id="bStart">Start</button>
-            <button class="btn" id="bStop" disabled>Stop and record</button>
-          </div>
-        </div>
-        <div id="compare"></div>
-      </div>
-    </div>
   </section>
 
   <!-- INSIGHTS -->
@@ -332,7 +313,7 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
   <h3 style="font-family:var(--serif);font-size:22px;margin:0 0 8px" id="fbTitle">Copy export</h3>
   <p class="small muted">Downloads aren't available in this view. Copy the text below into a file.</p>
   <textarea id="fbText" readonly></textarea>
-  <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" id="fbCopy">Copy</button><button class="btn gold" id="fbClose">Close</button></div>
+  <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" id="fbCopy">Copy</button><button class="btn gold" id="fbDownload">Download</button><button class="btn" id="fbClose">Cancel</button></div>
 </dialog>
 
 <script>
@@ -366,7 +347,7 @@ const DEFAULT_MENU = [
 ].map(([id,name,shell,top,deco])=>({id,name,shell,top,deco,active:true}));
 
 const SIZES = [6,10,16,30,50];
-const LS = {boxes:"cd-boxes-v1", menu:"cd-menu-v1", loc:"cd-loc", base:"cd-baseline-v1", pend:"cd-pending-v1"};
+const LS = {boxes:"cd-boxes-v1", menu:"cd-menu-v1", loc:"cd-loc", pend:"cd-pending-v1"};
 const lsGet = (k,d) => { try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } };
 const lsSet = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
 
@@ -374,7 +355,6 @@ const lsSet = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch
 let menu = lsGet(LS.menu, null) || DEFAULT_MENU.map(m=>({...m}));
 let boxes = lsGet(LS.boxes, []);
 if(!Array.isArray(boxes))boxes=[];
-let baseline = lsGet(LS.base, []);
 let db = null, dbLive = false;
 let box = freshBox(null);
 let autoTimer = null, tick = null;
@@ -611,6 +591,7 @@ function toCSV(list){
   });
   return [head.join(","), ...rows].join("\n");
 }
+let currentExport = null; // {kind, filename, data} backing the preview/Copy/Download popup, always the same source
 async function exportFile(kind){
   if (!boxes.length){ nudge("No boxes saved yet."); return; }
   const stamp = new Date().toISOString().slice(0,10);
@@ -622,12 +603,26 @@ async function exportFile(kind){
     try{ await dl.save({filename, data}); return; }
     catch(e){ if (e && e.code==="declined") return; if (e && e.code==="rate_limited"){ nudge("A save prompt is already open."); return; } }
   }
-  $("#fbTitle").textContent = filename; $("#fbText").value = data; $("#fallback").showModal();
+  currentExport = {kind, filename, data};
+  $("#fbTitle").textContent = filename; $("#fbText").value = data; $("#fbCopy").textContent = "Copy"; $("#fallback").showModal();
+}
+function downloadTextFile(filename, data, mime){
+  const blob = new Blob([data], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 $("#expCsv").onclick = () => exportFile("csv");
 $("#expJson").onclick = () => exportFile("json");
 $("#fbClose").onclick = () => $("#fallback").close();
 $("#fbCopy").onclick = async () => { try{ await navigator.clipboard.writeText($("#fbText").value); $("#fbCopy").textContent="Copied"; }catch(e){ $("#fbText").select(); } };
+$("#fbDownload").onclick = () => {
+  if (!currentExport) return;
+  const mime = currentExport.kind==="csv" ? "text/csv;charset=utf-8" : "application/json;charset=utf-8";
+  downloadTextFile(currentExport.filename, currentExport.data, mime);
+};
 
 /* ---------- boxes view ---------- */
 const median = a => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; };
@@ -655,38 +650,6 @@ function renderBoxes(){
         <td><button class="x" data-del="${esc(b.id)}" aria-label="Delete box">Delete</button></td></tr>`).join("") + "</tbody>";
     $("#boxTable").querySelectorAll("[data-del]").forEach(x => x.onclick = () => { if (confirm("Delete this box record?")) deleteBox(x.dataset.del); });
   }
-  renderCompare();
-}
-
-/* baseline stopwatch */
-$("#bSize").innerHTML = SIZES.map(s=>`<option>${s}</option>`).join("");
-let bStart = null, bTick = null;
-$("#bStart").onclick = () => {
-  bStart = performance.now(); $("#bStart").disabled = true; $("#bStop").disabled = false;
-  bTick = setInterval(()=>$("#watch").textContent = ((performance.now()-bStart)/1000).toFixed(1)+" s", 100);
-};
-$("#bStop").onclick = () => {
-  clearInterval(bTick);
-  const s = Math.round((performance.now()-bStart)/100)/10;
-  baseline.push({size:+$("#bSize").value, seconds:s, at:new Date().toISOString()});
-  lsSet(LS.base, baseline);
-  bStart=null; $("#bStart").disabled=false; $("#bStop").disabled=true; $("#watch").textContent = s.toFixed(1)+" s";
-  renderCompare();
-};
-function renderCompare(){
-  const sizes = [...new Set([...baseline.map(b=>b.size), ...boxes.filter(b=>b.boxSize).map(b=>b.boxSize)])].sort((a,b)=>a-b);
-  if (!sizes.length){ $("#compare").innerHTML = `<p class="muted">Record a few timed boxes both ways to see the difference.</p>`; return; }
-  $("#compare").innerHTML = `<div class="scroll"><table><thead><tr><th>Box</th><th class="num">Without log</th><th class="num">With log</th><th class="num">Added</th></tr></thead><tbody>${
-    sizes.map(s=>{
-      const bl = baseline.filter(b=>b.size===s).map(b=>b.seconds);
-      const ap = boxes.filter(b=>b.boxSize===s).map(b=>b.captureSeconds);
-      const mb = median(bl), ma = median(ap);
-      const add = mb!=null && ma!=null ? ma-mb : null;
-      return `<tr><td>${s} pieces</td><td class="num">${fmt(mb)} <span class="muted small">(${bl.length})</span></td><td class="num">${fmt(ma)} <span class="muted small">(${ap.length})</span></td><td class="num"><b>${add==null?"–":(add>=0?"+":"")+add.toFixed(1)+" s"}</b></td></tr>`;
-    }).join("")}</tbody></table></div>
-    <p class="small muted">Medians, with the number of timed boxes in brackets. Aim for at least 10 each way.</p>
-    ${baseline.length?`<button class="x" id="clrBase">Clear stopwatch times</button>`:""}`;
-  const c = $("#clrBase"); if (c) c.onclick = () => { if(confirm("Clear all stopwatch times?")){ baseline=[]; lsSet(LS.base, baseline); renderCompare(); } };
 }
 
 /* ---------- insights ---------- */

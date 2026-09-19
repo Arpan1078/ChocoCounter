@@ -27,7 +27,7 @@ module.exports=async({evaluate,send,delay,profile})=>{
   assert(await evaluate(`(()=>{const a=document.querySelector('#catalog-title').getBoundingClientRect(),b=document.querySelector('.catalog-tools').getBoundingClientRect();return a.right<b.left&&b.right<=innerWidth&&document.documentElement.scrollWidth<=innerWidth})()`));
  }
  for(const saved of ['bad json','{}',JSON.stringify(['raspberry','raspberry','removed-id'])]){
-  await evaluate(`localStorage.setItem('cd-catalog-order-v1',${JSON.stringify(saved)})`);await reload();const ids=await order();assert.equal(ids.length,25);assert.equal(new Set(ids).size,25);if(saved.startsWith('['))assert.equal(ids[0],'raspberry');
+  await evaluate(`localStorage.setItem('cd-catalog-order-v1',${JSON.stringify(saved)})`);await reload();const ids=await order();assert.equal(ids.length,31);assert.equal(new Set(ids).size,31);if(saved.startsWith('['))assert.equal(ids[0],'raspberry');
  }
  await evaluate(`localStorage.removeItem('cd-catalog-order-v1')`);await reload();
  console.log('PASS catalog editing: mouse/touch swaps, selection/Qty lock, independent modes, unchanged box/history/data, restored ID order, stale storage repair, and four responsive headers.');

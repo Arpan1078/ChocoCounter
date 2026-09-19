@@ -89,6 +89,16 @@
 .catalog-tools {display:flex;align-items:center;gap:12px;flex:none;white-space:nowrap;}
 #catalog-edit {min-width:44px;min-height:44px;padding:4px;border:0;background:transparent;color:var(--counter-accent);font-size:12px;text-decoration:underline;text-underline-offset:3px;}
 #catalog-edit:disabled {opacity:.4;cursor:default;}
+/* Compact filter popover: a plain text trigger next to the count/Edit controls,
+   matching their minimal styling -- no pill, no chip row, no filled button. */
+.catalog-filter {position:relative;flex:none;}
+.catalog-filter-toggle {min-width:44px;min-height:44px;padding:4px 8px;border:0;background:transparent;color:var(--counter-muted);font-size:12px;text-decoration:underline;text-underline-offset:3px;}
+.catalog-filter-toggle.is-active {color:var(--counter-accent);}
+.catalog-filter-menu {position:absolute;top:100%;right:0;margin-top:4px;background:#ffffff;border:1px solid var(--color-disabled);border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,.14);padding:4px;min-width:150px;z-index:6;display:flex;flex-direction:column;gap:1px;}
+.catalog-filter-menu[hidden] {display:none;}
+.catalog-filter-menu button {text-align:left;min-height:38px;padding:8px 10px;border:0;background:transparent;border-radius:4px;font-size:13px;color:var(--color-text);}
+.catalog-filter-menu button:hover {background:var(--color-bg-secondary);}
+.catalog-filter-menu button[aria-checked="true"] {color:var(--color-primary);font-weight:600;}
 .catalog-reordering .chocolate-card {cursor:grab;touch-action:none;}
 .catalog-reordering .catalog-item {touch-action:none;}
 .catalog-reordering .chocolate-card:hover img {transform:none;}

@@ -3,11 +3,46 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   const root=document.querySelector('#v-counter'), selection=createCounterSelection(products);
   const available=products.filter(p=>p.active), byId=new Map(products.map(p=>[p.id,p]));
   const grid=root.querySelector('.chocolate-grid');
-  let quantityProduct=null, quantityText='', saving=false, savedNoticeTimer=null;
+  let quantityProduct=null, quantityText='', saving=false, savedNoticeTimer=null, catalogFilter='all';
   grid.innerHTML=available.map(p=>`<div class="catalog-item"><button type="button" class="chocolate-card" data-product-id="${esc(p.id)}" aria-label="Add ${esc(p.name)}"><span class="chocolate-visual" style="--product-background:${esc(p.backgroundColor)}"><img src="${esc(p.image)}" alt="" draggable="false" width="600" height="540"></span><span class="chocolate-name"><span>${esc(p.name)}</span><span class="quantity-badge" aria-hidden="true" hidden></span></span></button><button type="button" class="quantity-open" data-quantity-id="${esc(p.id)}" aria-label="Choose quantity for ${esc(p.name)}">Qty</button></div>`).join('');
-  root.querySelector('#catalog-result').textContent=`${available.length} chocolates`;
   const cards=new Map([...grid.querySelectorAll('.chocolate-card')].map(c=>[c.dataset.productId,c]));
+  const catalogItems=new Map([...cards].map(([id,c])=>[id,c.closest('.catalog-item')]));
+  // A product photo that fails to load (e.g. a CocoShot asset not supplied yet)
+  // falls back to a neutral placeholder on its existing color swatch, never a
+  // broken-image icon and never a fake chocolate photo.
+  grid.querySelectorAll('.chocolate-card img').forEach(img=>{
+    img.addEventListener('error',()=>{img.closest('.chocolate-visual').classList.add('image-missing');img.remove();},{once:true});
+  });
+  const catalogEmpty=root.querySelector('#catalog-empty');
   const catalogEdit=root.querySelector('#catalog-edit');
+  const filterToggle=root.querySelector('#catalog-filter-toggle'), filterMenu=root.querySelector('#catalog-filter-menu');
+  const filterLabels={all:'Filter',basic:'Filter: Basic',seasonal:'Filter: Seasonal',cocoshots:'Filter: CocoShots'};
+  function applyFilter(){
+    let visible=0;
+    for(const p of available){
+      const show=catalogFilter==='all'||p.category===catalogFilter;
+      catalogItems.get(p.id).hidden=!show;
+      if(show)visible++;
+    }
+    root.querySelector('#catalog-result').textContent=`${visible} chocolate${visible===1?'':'s'}`;
+    filterToggle.textContent=filterLabels[catalogFilter];
+    filterToggle.classList.toggle('is-active',catalogFilter!=='all');
+    // The grid and its empty state are independent of the header/count/Filter/Edit
+    // controls (siblings, not ancestors), so zero matches never takes them with it.
+    catalogEmpty.hidden=visible!==0;
+  }
+  function closeFilterMenu(){filterMenu.hidden=true;filterToggle.setAttribute('aria-expanded','false');}
+  function openFilterMenu(){filterMenu.hidden=false;filterToggle.setAttribute('aria-expanded','true');}
+  filterToggle.onclick=()=>{filterMenu.hidden?openFilterMenu():closeFilterMenu();};
+  filterMenu.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{
+    catalogFilter=b.dataset.filter;
+    filterMenu.querySelectorAll('[data-filter]').forEach(o=>o.setAttribute('aria-checked',String(o===b)));
+    closeFilterMenu();
+    applyFilter();
+  });
+  document.addEventListener('click',e=>{if(!filterMenu.hidden&&!e.target.closest('.catalog-filter'))closeFilterMenu();});
+  filterMenu.addEventListener('keydown',e=>{if(e.key==='Escape'){closeFilterMenu();filterToggle.focus();}});
+  applyFilter();
   const catalogOrder=mountCatalogOrder(grid,catalogEdit,available,()=>render());
   const summary=root.querySelector('.box-summary');summary.setAttribute('aria-label','Selected chocolates');summary.tabIndex=0;
   root.querySelector('.builder-heading').insertAdjacentHTML('beforeend','<div class="transaction-notice" role="status" aria-live="polite" hidden></div>');
