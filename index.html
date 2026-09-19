@@ -9,10 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f4efeb; --surface:#fffcf9; --surface-2:#efe6dd; --ink:#2b1d17; --ink-soft:#6d5a4e;
-  --line:#e0d3c6; --gold:#9e8959; --gold-ink:#6f5f36; --cocoa:#3b2219; --ok:#4f7a4a; --warn:#a4462f;
+  /* Central brand tokens (Cocoa Dolce site alignment pass). Every other color
+     variable below is an alias onto these five so no hex is duplicated. */
+  --color-bg:#ffffff; --color-bg-secondary:#f2eee7; --color-primary:#817151; --color-disabled:#cdc3af; --color-text:#000000;
+  --bg:var(--color-bg); --surface:var(--color-bg); --surface-2:var(--color-bg-secondary); --ink:var(--color-text); --ink-soft:#6d5a4e;
+  --line:#e0d3c6; --gold:var(--color-primary); --gold-ink:#6f5f36; --cocoa:#3b2219; --ok:#4f7a4a; --warn:#a4462f;
   --tray:#2b1a14; --tray-slot:#3d281f; --shadow:0 1px 0 rgba(43,29,23,.06),0 8px 24px -14px rgba(43,29,23,.35);
-  --serif:"Cormorant Garamond","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  /* Giriton is the brand typeface used on the live Cocoa Dolce site; no licensed
+     local font file exists in this repo (checked before writing this rule), so
+     it is named first and falls back to the existing elegant serif stack. */
+  --serif:"Giriton","Cormorant Garamond","Iowan Old Style","Palatino Linotype",Georgia,serif;
   --sans:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){
@@ -174,6 +180,7 @@ dialog textarea{width:100%;height:280px;font-family:ui-monospace,Menlo,monospace
 <script src="counter-selection.js"></script>
 <script src="counter-box.js"></script>
 <script src="counter-catalog.js"></script>
+<script src="counter-transactions.js"></script>
 <script src="counter-foundation.js"></script>
 </head>
 <body>
@@ -362,6 +369,7 @@ const lsSet = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch
 /* ---------- state ---------- */
 let menu = lsGet(LS.menu, null) || DEFAULT_MENU.map(m=>({...m}));
 let boxes = lsGet(LS.boxes, []);
+if(!Array.isArray(boxes))boxes=[];
 let baseline = lsGet(LS.base, []);
 let db = null, dbLive = false;
 let box = freshBox(null);
@@ -700,8 +708,11 @@ function demoBoxes(){
   return demoCache = out;
 }
 ["#fLoc","#fRange","#fDemo"].forEach(s => $(s).onchange = renderInsights);
+function insightsThumbnail(product){
+  return product.image ? `<img class="insights-chocolate" src="${esc(product.image)}" alt="" width="36" height="36">` : '<span class="insights-chocolate insights-missing" aria-hidden="true">&ndash;</span>';
+}
 function bar(label, v, max, suffix, m){
-  return `<div class="barrow">${m?bb(m,"sm"):"<span></span>"}<span>${esc(label)}</span><div class="track"><div class="fill" style="width:${max? (v/max*100).toFixed(1):0}%"></div></div><span class="num small">${suffix}</span></div>`;
+  return `<div class="barrow">${m?insightsThumbnail(m):"<span></span>"}<span>${esc(label)}</span><div class="track"><div class="fill" style="width:${max? (v/max*100).toFixed(1):0}%"></div></div><span class="num small">${suffix}</span></div>`;
 }
 function renderInsights(){
   let list = boxes.slice();
@@ -716,6 +727,8 @@ function renderInsights(){
     $("#topBars").innerHTML = `<div class="empty">No boxes match. Log boxes at the counter, or turn on sample boxes to preview this view.</div>`;
     return;
   }
+  const savedNames=new Map(list.flatMap(b=>b.items.map(i=>[i.id,i.name])));
+  const insightProduct=id=>COUNTER_PRODUCTS.find(p=>p.id===id)||COUNTER_PRODUCTS.find(p=>p.name===savedNames.get(id))||{id,name:savedNames.get(id)||byId(id).name};
   const pieces = {}, inBox = {}, pairs = {};
   list.forEach(b => {
     b.items.forEach(i => { pieces[i.id]=(pieces[i.id]||0)+i.qty; inBox[i.id]=(inBox[i.id]||0)+1; });
@@ -727,16 +740,16 @@ function renderInsights(){
   const N = list.length;
   $("#insStats").innerHTML = `
     <div class="stat"><div class="v">${totalPieces}</div><div class="k">Pieces sold in boxes</div></div>
-    <div class="stat"><div class="v">${byId(top[0][0]).name}</div><div class="k">Most-picked piece</div></div>
+    <div class="stat"><div class="v">${esc(insightProduct(top[0][0]).name)}</div><div class="k">Most-picked piece</div></div>
     <div class="stat"><div class="v">${(totalPieces/N).toFixed(1)}</div><div class="k">Average pieces per box</div></div>
     <div class="stat"><div class="v">${Math.round(inBox[top[0][0]]/N*100)}%</div><div class="k">Boxes with the top piece</div></div>`;
-  $("#topBars").innerHTML = top.slice(0,12).map(([id,v])=>bar(byId(id).name, v, top[0][1], v, byId(id))).join("");
+  $("#topBars").innerHTML = top.slice(0,12).map(([id,v])=>bar(insightProduct(id).name, v, top[0][1], v, insightProduct(id))).join("");
   const minSupport = Math.max(2, Math.round(N*0.02));
   const pr = Object.entries(pairs).filter(([,c])=>c>=minSupport).map(([k,c])=>{
     const [a,b] = k.split("|"); return {a,b,c,lift:(c/N)/((inBox[a]/N)*(inBox[b]/N))};
   }).sort((x,y)=> (y.lift*Math.sqrt(y.c)) - (x.lift*Math.sqrt(x.c))).slice(0,8);
-  $("#pairs").innerHTML = pr.length ? pr.map(p=>`<div class="pair"><span class="duo">${bb(byId(p.a),"sm")}${bb(byId(p.b),"sm")}</span>
-     <span>${esc(byId(p.a).name)} with ${esc(byId(p.b).name)}<br><span class="small muted">${p.c} boxes</span></span>
+  $("#pairs").innerHTML = pr.length ? pr.map(p=>`<div class="pair"><span class="duo">${insightsThumbnail(insightProduct(p.a))}${insightsThumbnail(insightProduct(p.b))}</span>
+     <span>${esc(insightProduct(p.a).name)} with ${esc(insightProduct(p.b).name)}<br><span class="small muted">${p.c} boxes</span></span>
      <span class="lift ${p.lift>=1.3?'hi':''}">${p.lift.toFixed(1)}× chance</span></div>`).join("")
     : `<p class="muted">Pairs appear once a few boxes share pieces.</p>`;
   const sz = {}; list.forEach(b=>{ const k=b.boxSize||"Other"; sz[k]=(sz[k]||0)+1; });
@@ -792,7 +805,7 @@ document.addEventListener("keydown", e => {
   if (e.key==="Enter" && !$("#save").disabled && !e.target.closest("button")){ e.preventDefault(); saveBox(); }
 });
 
-mountCounterFoundation({ products: COUNTER_PRODUCTS, escapeHTML: esc });
+mountCounterFoundation({ products: COUNTER_PRODUCTS, escapeHTML: esc, transactionLocation:loc.value, onSaved:records=>{boxes=records;} });
 renderCounter(); setSync();
 initDb();
 })();

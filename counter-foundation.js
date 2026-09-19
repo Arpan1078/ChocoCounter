@@ -1,15 +1,17 @@
 ﻿/* Stable catalog targets; all quantities and visuals derive from the slot state. */
-function mountCounterFoundation({ products, escapeHTML: esc }) {
+function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation='', onSaved=()=>{} }) {
   const root=document.querySelector('#v-counter'), selection=createCounterSelection(products);
   const available=products.filter(p=>p.active), byId=new Map(products.map(p=>[p.id,p]));
   const grid=root.querySelector('.chocolate-grid');
-  let editing=false, quantityProduct=null, quantityText='';
+  let editing=false, quantityProduct=null, quantityText='', saving=false, savedNoticeTimer=null;
   grid.innerHTML=available.map(p=>`<div class="catalog-item"><button type="button" class="chocolate-card" data-product-id="${esc(p.id)}" aria-label="Add ${esc(p.name)}"><span class="chocolate-visual" style="--product-background:${esc(p.backgroundColor)}"><img src="${esc(p.image)}" alt="" draggable="false" width="600" height="540"></span><span class="chocolate-name"><span>${esc(p.name)}</span><span class="quantity-badge" aria-hidden="true" hidden></span></span></button><button type="button" class="quantity-open" data-quantity-id="${esc(p.id)}" aria-label="Choose quantity for ${esc(p.name)}">Qty</button></div>`).join('');
   root.querySelector('#catalog-result').textContent=`${available.length} chocolates`;
   const cards=new Map([...grid.querySelectorAll('.chocolate-card')].map(c=>[c.dataset.productId,c]));
   const catalogEdit=root.querySelector('#catalog-edit');
   const catalogOrder=mountCatalogOrder(grid,catalogEdit,available,()=>render());
   const summary=root.querySelector('.box-summary');summary.setAttribute('aria-label','Selected chocolates');summary.tabIndex=0;
+  root.querySelector('.builder-heading').insertAdjacentHTML('beforeend','<div class="transaction-notice" role="status" aria-live="polite" hidden></div>');
+  const notice=root.querySelector('.transaction-notice');
   const complete=root.querySelector('#box-complete');
   const status=root.querySelector('.builder-footnote');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
   const [undo,edit,empty,save]=root.querySelectorAll('.builder-controls button');
@@ -30,7 +32,7 @@ function mountCounterFoundation({ products, escapeHTML: esc }) {
     complete.hidden=state.count!==state.capacity;
     summary.innerHTML=state.count?`<ul>${state.items.map(i=>`<li><img class="summary-thumb" src="${esc(byId.get(i.id).image)}" alt=""><span class="summary-name">${esc(i.name)}</span><span>×${i.quantity}</span></li>`).join('')}</ul>`:'<p>No chocolates selected.</p>';
     undo.disabled=!state.canUndo;empty.disabled=!state.count;edit.disabled=catalogEditing||(!state.count&&!editing);edit.textContent=editing?'Done':'Edit';edit.setAttribute('aria-pressed',editing);
-    save.disabled=state.count!==state.capacity;
+    save.disabled=saving||state.count!==state.capacity;
     status.textContent=editing?'Editing box: tap to remove; drag to move or swap.':state.count===state.capacity?'Box full.':'Select chocolates to fill your box.';
     boxView.render(state,editing,added);
   }
@@ -58,7 +60,17 @@ function mountCounterFoundation({ products, escapeHTML: esc }) {
   edit.onclick=()=>{editing=!editing;render();};
   empty.onclick=()=>{root.querySelector('#clear-title').textContent=`Clear all ${selection.snapshot().count} chocolates?`;clearDialog.showModal();};
   root.querySelector('#clear-confirm').onclick=()=>{clearDialog.close();apply(selection.clear());};
-  save.onclick=()=>{status.textContent='Saving will be available in the next phase.';};
+  save.onclick=()=>{
+    const state=selection.snapshot();if(saving||state.count!==state.capacity)return;
+    saving=true;save.disabled=true;
+    let saved;
+    try {saved=saveCounterTransaction(state,{location:transactionLocation});}
+    catch(error){saving=false;save.disabled=false;status.textContent="Couldn't save box. Try again.";status.title=error.message;return;}
+    selection.resetTransaction();editing=false;saving=false;status.removeAttribute('title');render();
+    onSaved(saved.records);
+    notice.innerHTML='<strong>&#10003; Box Saved</strong><span>'+esc(saved.record.id)+'</span><span>'+saved.record.totalPieces+' pieces &middot; '+(saved.record.captureDurationMs/1000).toFixed(1)+' sec</span>';
+    notice.hidden=false;clearTimeout(savedNoticeTimer);savedNoticeTimer=setTimeout(()=>notice.hidden=true,2600);
+  };
   root.querySelectorAll('[data-capacity-option]').forEach(b=>b.onclick=()=>{if(!editing)apply(selection.setCapacity(Number(b.dataset.capacityOption)));});
   render();
   return {getSelection:selection.snapshot};

@@ -1,7 +1,8 @@
 ﻿/* Counter tokens are scoped so records and Insights retain their styling. */
 body {
-  --counter-paper:#FFF; --counter-background:#FAFAF8; --counter-ink:#191919;
-  --counter-muted:#73716E; --counter-border:#E3E1DC; --counter-accent:#B49A6C;
+  /* Aliased onto the same central brand tokens defined in the page's :root. */
+  --counter-paper:var(--color-bg); --counter-background:var(--color-bg); --counter-ink:var(--color-text);
+  --counter-muted:#73716E; --counter-border:#E3E1DC; --counter-accent:var(--color-primary);
   background:var(--counter-background);
 }
 header {padding:12px 2.5%;gap:24px;position:relative;background:var(--counter-paper);border-color:var(--counter-border);color:var(--counter-ink);}
@@ -39,7 +40,7 @@ main {max-width:2000px;padding:24px 2.5% 32px;}
 .box-size-label {display:block;font-size:10px;letter-spacing:.12em;font-weight:500;margin-bottom:10px;}
 .box-size-options {display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .box-size-options button {min-height:46px;background:var(--counter-paper);border:1px solid var(--counter-border);border-radius:0;font-size:13px;}
-.box-size-options button[aria-pressed="true"] {background:var(--counter-ink);color:var(--counter-paper);border-color:var(--counter-ink);}
+.box-size-options button[aria-pressed="true"] {background:var(--counter-accent);color:var(--counter-paper);border-color:var(--counter-accent);}
 .box-size-options button:focus-visible {outline-color:var(--counter-accent);}
 /* Supplied fixed-view render, with no crop or CSS recreation. */
 .box-scene {margin:24px 0;}
@@ -51,8 +52,9 @@ main {max-width:2000px;padding:24px 2.5% 32px;}
 .box-summary p {font-size:13px;color:var(--counter-muted);margin:0;}
 .builder-controls {display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:6px;}
 .builder-controls button {min-height:44px;border:1px solid var(--counter-border);border-radius:0;background:transparent;font-size:12px;padding:8px 4px;}
-.builder-controls button:disabled {color:#999795;cursor:not-allowed;}
-.builder-controls .save-box {grid-column:1/-1;background:#D9D8D5;color:#777570;font-size:14px;min-height:48px;margin-top:6px;border-color:#D9D8D5;}
+.builder-controls button:disabled {color:var(--color-disabled);border-color:var(--color-disabled);cursor:not-allowed;}
+.builder-controls .save-box {grid-column:1/-1;font-size:14px;min-height:48px;margin-top:6px;}
+.builder-controls .save-box:disabled {background:var(--color-disabled);color:#5b5343;border-color:var(--color-disabled);}
 .builder-footnote {font-size:11px;text-align:center;color:var(--counter-muted);margin:12px 0 0;}
 @media(min-width:1500px){.catalog{max-height:calc(100dvh - 140px);overflow-y:auto;padding-right:10px;scrollbar-width:thin;scrollbar-color:var(--counter-border) transparent;}}
 @media(max-width:1199px){.foundation{grid-template-columns:minmax(0,1fr) 300px;gap:20px;}.chocolate-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px 10px;}.builder{padding:18px;}.chocolate-name{padding:10px;}}

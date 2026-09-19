@@ -7,8 +7,12 @@
 .quantity-open:hover {color:var(--counter-ink);}
 .catalog-editing {opacity:.5;}
 .catalog-editing button {cursor:default;}
-.builder-controls .save-box:not(:disabled) {background:var(--counter-ink);color:var(--counter-paper);border-color:var(--counter-ink);}
-.builder-controls [aria-pressed="true"] {border-color:var(--counter-ink);}
+.builder-controls .save-box:not(:disabled) {background:var(--counter-accent);color:var(--counter-paper);border-color:var(--counter-accent);}
+.builder-controls [aria-pressed="true"] {border-color:var(--counter-accent);}
+/* Undo / Edit / Empty Box / Capture: outlined secondary actions, never solid. */
+.builder-controls button:not(.save-box) {border-color:var(--counter-accent);color:var(--counter-accent);background:var(--counter-paper);}
+.builder-controls button:not(.save-box):hover:not(:disabled) {background:var(--color-bg-secondary);}
+.builder-controls button:not(.save-box):disabled {border-color:var(--color-disabled);color:var(--color-disabled);background:var(--counter-paper);}
 /* Both box renders are true top-down photos (1536x1024): every chocolate is the
    same size and simply centers in its cavity, no perspective scaling or masking. */
 .box-frame {position:relative;width:100%;aspect-ratio:1536/1024;margin-inline:auto;}
@@ -50,7 +54,8 @@
 .counter-dialog button:disabled {opacity:.4;cursor:not-allowed;}
 .quantity-keys {display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
 .dialog-actions {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
-.dialog-actions button:last-child {background:var(--counter-ink);color:var(--counter-paper);}
+.dialog-actions button:last-child {background:var(--counter-accent);color:var(--counter-paper);border-color:var(--counter-accent);}
+.dialog-actions button:last-child:disabled {background:var(--color-disabled);border-color:var(--color-disabled);color:#5b5343;opacity:1;}
 @media(max-width:760px){.box-frame{max-width:320px;}}
 @media(min-width:1024px) and (max-width:1499px) and (orientation:landscape){
   .box-frame {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100%;max-width:100cqh;}
@@ -82,7 +87,7 @@
 .temporary-tray .box-piece img {transform:none;max-width:none;}
 /* Catalog order editing is separate from the box's editing state. */
 .catalog-tools {display:flex;align-items:center;gap:12px;flex:none;white-space:nowrap;}
-#catalog-edit {min-width:44px;min-height:44px;padding:4px;border:0;background:transparent;color:var(--counter-muted);font-size:12px;text-decoration:underline;text-underline-offset:3px;}
+#catalog-edit {min-width:44px;min-height:44px;padding:4px;border:0;background:transparent;color:var(--counter-accent);font-size:12px;text-decoration:underline;text-underline-offset:3px;}
 #catalog-edit:disabled {opacity:.4;cursor:default;}
 .catalog-reordering .chocolate-card {cursor:grab;touch-action:none;}
 .catalog-reordering .catalog-item {touch-action:none;}
@@ -94,3 +99,12 @@
 .catalog-drag-preview .chocolate-card {width:100%;}
 .catalog-drag-preview .quantity-open {display:none;}
 @media(max-width:380px){.catalog-top{gap:6px;}.catalog-tools{gap:4px;}}
+/* A brief confirmation overlays only the existing heading, never the controls. */
+.builder-heading {position:relative;}
+.transaction-notice {position:absolute;inset:-8px 0;background:var(--counter-paper);display:flex;flex-direction:column;justify-content:center;gap:1px;border-left:2px solid var(--counter-accent);padding-left:8px;pointer-events:none;}
+.transaction-notice[hidden] {display:none;}
+.transaction-notice strong {font-size:13px;font-weight:500;}
+.transaction-notice span {font-size:10px;line-height:1.2;color:var(--counter-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Insights uses the same transparent front-view photos as the Counter catalog. */
+#v-insights .insights-chocolate {display:block;width:36px;height:36px;object-fit:contain;object-position:center;background:transparent;border:0;flex:none;}
+#v-insights .insights-missing {display:grid;place-items:center;color:var(--muted);font-size:16px;}

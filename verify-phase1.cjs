@@ -117,6 +117,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
   await require('./verify-selection.cjs')({ evaluate, send, delay, profile });
   await require('./verify-builder.cjs')({ evaluate, send, delay, profile });
   await require('./verify-catalog.cjs')({ evaluate, send, delay, profile });
+  await require('./verify-transactions.cjs')({ evaluate, send, delay, profile });
   await evaluate(`document.querySelector('[data-view="boxes"]').click()`);
   assert(await evaluate(`!document.querySelector('#v-boxes').hidden && document.querySelector('#boxTable').textContent.includes('Salted Caramel')`));
   assert(await evaluate(`['expCsv','expJson','bStart','bStop'].every(id=>document.getElementById(id))`));
