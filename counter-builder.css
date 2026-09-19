@@ -139,6 +139,15 @@
 @media(min-width:1024px) and (max-width:1499px) and (orientation:landscape){.box-scene{flex:1 1 auto;min-height:0;}.box-undo,.box-reset{min-height:23px;padding:3px 6px;bottom:8px;font-size:11px;}}
 
 /* Phase C management workspace and resizable Counter split. */
+/* Photo boxes follow panel width, not the remaining landscape flex height.
+   Keep the image and percentage-positioned slots in the same 3:2 frame.
+   The existing builder scroll handles panels too wide for the viewport height. */
+@media(min-width:761px){
+  #v-counter .box-visual:has(.box-frame){flex:0 0 auto;}
+  #v-counter .box-scene:has(.box-frame){flex:none;container-type:normal;margin:0;overflow:visible;}
+  #v-counter .box-frame{position:relative;left:auto;bottom:auto;transform:none;width:100%;max-width:none;}
+  #v-counter .box-frame .box-piece img{transform:none;max-width:none;}
+}
 @media(min-width:761px){
    .foundation{grid-template-columns:minmax(0,var(--counter-catalog-split,65fr)) 10px minmax(0,var(--counter-builder-split,35fr));}
    .counter-divider{width:10px;align-self:stretch;position:relative;cursor:col-resize;touch-action:none;}

@@ -3,7 +3,7 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   const root=document.querySelector('#v-counter'), selection=createCounterSelection(products);
   let currentProducts=products, available=products.filter(p=>p.active), byId=new Map(products.map(p=>[p.id,p]));
   const grid=root.querySelector('.chocolate-grid');
-  let quantityProduct=null, quantityText='', saving=false, savedNoticeTimer=null, catalogFilter='all';
+  let quantityProduct=null, quantityText='', saving=false, pendingSaved=null, catalogFilter='all';
   let cards=new Map(), catalogItems=new Map();
   function buildCatalog(){
     grid.innerHTML=available.map(p=>`<div class="catalog-item"><button type="button" class="chocolate-card" data-product-id="${esc(p.id)}" aria-label="Add ${esc(p.name)}"><span class="chocolate-visual${p.image?'':' image-missing'}" style="--product-background:${esc(p.backgroundColor||'#817151')}">${p.image?`<img src="${esc(p.image)}" alt="" draggable="false" width="600" height="540">`:''}</span><span class="chocolate-name"><span>${esc(p.name)}</span><span class="quantity-badge" aria-hidden="true" hidden></span></span></button><button type="button" class="quantity-open" data-quantity-id="${esc(p.id)}" aria-label="Choose quantity for ${esc(p.name)}">Qty</button></div>`).join('');
@@ -42,8 +42,19 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   filterMenu.addEventListener('keydown',e=>{if(e.key==='Escape'){closeFilterMenu();filterToggle.focus();}});
   applyFilter();
   const summary=root.querySelector('.box-summary');summary.setAttribute('aria-label','Selected chocolates');summary.tabIndex=0;
-  root.querySelector('.builder-heading').insertAdjacentHTML('beforeend','<div class="transaction-notice" role="status" aria-live="polite" hidden></div>');
-  const notice=root.querySelector('.transaction-notice');
+  root.insertAdjacentHTML('beforeend',`<dialog class="counter-dialog save-success-dialog" id="box-saved-dialog" aria-labelledby="box-saved-title" aria-describedby="box-saved-detail"><h2 id="box-saved-title">Box saved!</h2><p id="box-saved-detail">This box has been added to the current order.</p><div class="dialog-actions"><button type="button" id="saved-another" autofocus>Add Another Box</button><button type="button" id="saved-checkout">Go to Checkout</button></div></dialog>`);
+  const savedDialog=root.querySelector('#box-saved-dialog');
+  function lockSavedBox(locked){
+    root.querySelectorAll('.catalog,.box-scene,.box-size-options,.box-undo,.box-reset').forEach(element=>element.inert=locked);
+  }
+  function finishSavedBox(checkout=false){
+    savedDialog.close();selection.resetTransaction();pendingSaved=null;saving=false;lockSavedBox(false);render();
+    document.querySelector(`[data-view="${checkout?'checkout':'counter'}"]`).click();
+    if(checkout)document.querySelector('#v-checkout h2').focus();else root.querySelector('[data-capacity-option][aria-pressed="true"]').focus();
+  }
+  root.querySelector('#saved-another').onclick=()=>finishSavedBox();
+  root.querySelector('#saved-checkout').onclick=()=>finishSavedBox(true);
+  savedDialog.addEventListener('cancel',event=>{event.preventDefault();finishSavedBox();});
   const complete=root.querySelector('#box-complete');
   const status=root.querySelector('.builder-footnote');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
   const undo=root.querySelector('.box-undo'), reset=root.querySelector('.box-reset'), save=root.querySelector('.save-box');
@@ -89,13 +100,18 @@ function mountCounterFoundation({ products, escapeHTML: esc, transactionLocation
   save.onclick=()=>{
     const state=selection.snapshot();if(saving||state.count!==state.capacity)return;
     saving=true;save.disabled=true;
-    let saved;
-    try {saved=saveCounterTransaction(state,{location:transactionLocation});}
-    catch(error){saving=false;save.disabled=false;status.textContent="Couldn't save box. Try again.";status.title=error.message;return;}
-    selection.resetTransaction();saving=false;status.removeAttribute('title');render();
-    onSaved(saved.records);
-    notice.innerHTML='<strong>&#10003; Box Saved</strong><span>'+esc(saved.record.id)+'</span><span>'+saved.record.totalPieces+' pieces &middot; '+(saved.record.captureDurationMs/1000).toFixed(1)+' sec</span>';
-    notice.hidden=false;clearTimeout(savedNoticeTimer);savedNoticeTimer=setTimeout(()=>notice.hidden=true,2600);
+    try {
+      // Read first so corrupt order data cannot create an ungrouped transaction.
+      readCounterOrder();
+      if(!pendingSaved){pendingSaved=saveCounterTransaction(state,{location:transactionLocation});onSaved(pendingSaved.records);}
+      addCounterOrderBox(pendingSaved.record.id);
+    }
+    catch(error){
+      saving=false;save.disabled=false;lockSavedBox(!!pendingSaved);
+      status.textContent=pendingSaved?"Box is saved in history, but couldn't be added to this order. Click Save Box to retry before refreshing.":"Couldn't save box. Try again.";
+      status.title=error.message;return;
+    }
+    status.removeAttribute('title');lockSavedBox(true);savedDialog.showModal();
   };
   root.querySelectorAll('[data-capacity-option]').forEach(b=>b.onclick=()=>apply(selection.setCapacity(Number(b.dataset.capacityOption))));
   render();
