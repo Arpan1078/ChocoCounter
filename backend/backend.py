@@ -37,8 +37,20 @@ DATABASE_URL = os.getenv(
     "postgresql+psycopg://chococounter:chococounter_dev_password@db:5432/chococounter",
 )
 
+ENABLE_PERSISTENT_UPLOADS = os.getenv(
+    "ENABLE_PERSISTENT_UPLOADS",
+    "true",
+).lower() in {"1", "true", "yes", "on"}
+
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "/app/uploads"))
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+if ENABLE_PERSISTENT_UPLOADS:
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+ENABLE_PERSISTENT_UPLOADS = os.getenv(
+    "ENABLE_PERSISTENT_UPLOADS",
+    "true",
+).lower() in {"1", "true", "yes", "on"}
 
 CORS_ORIGINS = [
     origin.strip()
@@ -540,8 +552,23 @@ def update_layout(
     return {"saved": len(payload)}
 
 
+ENABLE_PERSISTENT_UPLOADS = os.getenv(
+    "ENABLE_PERSISTENT_UPLOADS",
+    "true",
+).lower() in {"1", "true", "yes", "on"}
+
+
 @app.post("/api/uploads/box-image", status_code=201)
 async def upload_box_image(file: UploadFile = File(...)) -> dict:
+    if not ENABLE_PERSISTENT_UPLOADS:
+        raise HTTPException(
+            status_code=501,
+            detail=(
+                "Persistent photo uploads are disabled in this cloud deployment. "
+                "Use Skip photo and continue to checkout."
+            ),
+        )
+
     allowed_types = {
         "image/jpeg": ".jpg",
         "image/png": ".png",

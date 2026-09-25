@@ -241,3 +241,6 @@ box_uploads/
 Thumbs.db
 .vscode/
 .idea/
+.vercel
+.env*
+.vercel/

@@ -96,3 +96,8 @@ main {max-width:2000px;padding:24px 2.5% 32px;}
 @media (min-width:1250px) and (max-width:1499px) and (orientation:landscape) {
   .chocolate-grid {grid-template-columns:repeat(5,minmax(0,1fr));}
 }
+
+.builder-controls .capture-box.has-photo{
+  border-color:var(--ok,#4f7a4a);
+  color:var(--ok,#4f7a4a);
+}
